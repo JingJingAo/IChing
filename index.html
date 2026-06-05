@@ -41,14 +41,12 @@
             padding: calc(10px + env(safe-area-inset-top)) 12px calc(5px + env(safe-area-inset-bottom)) 12px;
         }
 
-        /* 3. ① 比例再微调：
-           - 压缩第二层（卦辞/彖传）至 1.8fr，释放出来的空间反斜补给第三层爻区 (3.4fr)
-           - 底部留出 25px 给提示文字栏 */
+        /* 主架构容器 */
         .main-layout {
             display: flex;
             flex-direction: column;
             width: 100%;
-            height: calc(100% - 25px); /* 扣除最下面一行说明栏的高度 */
+            height: calc(100% - 25px); 
         }
 
         .grid-container {
@@ -80,9 +78,7 @@
             width: 100%;
         }
 
-        /* ==================== 左侧区域 (2/5 宽度) ==================== */
-        
-        /* 左上：卦名区 */
+        /* ==================== 左侧区域 ==================== */
         #block-left-top {
             display: flex;
             align-items: center;
@@ -126,28 +122,17 @@
             font-size: 30px;
             font-weight: bold;
         }
-        .name-double .char1 {
-            position: absolute;
-            top: 6px;
-            left: 10px;
-        }
-        .name-double .char2 {
-            position: absolute;
-            bottom: 6px;
-            right: 10px;
-        }
+        .name-double .char1 { position: absolute; top: 6px; left: 10px; }
+        .name-double .char2 { position: absolute; bottom: 6px; right: 10px; }
 
-        /* ① 左中：卦辞区缩小、靠上开始对齐 */
         #block-left-middle {
             justify-content: flex-start; 
             align-items: flex-start;
             padding: 10px 12px;
         }
-        #ui-guaci {
-            text-align: left !important; 
-        }
+        #ui-guaci { text-align: left !important; }
 
-        /* 左下：六爻条交互区 */
+        /* 左下六爻交互区：显式防击穿 */
         #block-left-bottom {
             display: flex;
             flex-direction: column-reverse;
@@ -161,6 +146,7 @@
             align-items: center;
             height: 14%;
             width: 100%;
+            pointer-events: auto; /* 强化触控独立性 */
         }
 
         .bar-yao {
@@ -187,10 +173,7 @@
         
         .gap { background: transparent; height: 100%; width: 24%; }
 
-
-        /* ==================== 右侧区域 (3/5 宽度) ==================== */
-        
-        /* 右上大象区 */
+        /* ==================== 右侧区域 ==================== */
         #block-right-top {
             display: flex;
             flex-direction: column;
@@ -206,52 +189,35 @@
         }
 
         .daxiang-img {
-            width: 24px;
-            height: 24px;
+            width: 24px; height: 24px;
             background: url('./images/大象.png') center/contain no-repeat;
             flex-shrink: 0;
             margin-right: 8px;
         }
 
         .daxiang-txt1 {
-            color: #2b2b2b;
-            font-weight: bold;
-            font-size: 16.5px; 
-            white-space: nowrap;
+            color: #2b2b2b; font-weight: bold; font-size: 16.5px; white-space: nowrap;
         }
 
         .daxiang-second-line {
-            width: 100%;
-            margin-top: 3px;
-            line-height: 1.25;
-            color: #333;
-            text-align: justify;
+            width: 100%; margin-top: 3px; line-height: 1.25; color: #333; text-align: justify;
         }
 
-        /* ① 右中：彖传区定位调整 */
         .corner-icon {
-            position: absolute;
-            left: 12px;
-            top: 10px;
-            width: 24px; height: 24px;
+            position: absolute; left: 12px; top: 10px; width: 24px; height: 24px;
             background: url('./images/彖传.png') center/contain no-repeat;
         }
 
-        /* ① 彖传文本从图片下方直接开始，决不垂直居中 */
         .below-icon-content {
-            margin-top: 26px; /* 紧贴图片底部边缘 */
-            width: 100%;
-            height: calc(100% - 26px);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start; /* 顶格对齐，不再居中 */
+            margin-top: 26px; width: 100%; height: calc(100% - 26px);
+            display: flex; flex-direction: column; justify-content: flex-start;
         }
 
         #block-right-middle {
             background: url('./images/彖传背景.png') center/cover no-repeat rgba(255, 255, 255, 0.5);
         }
 
-        /* 右下：爻辞与小象区域 */
+        /* 右下爻辞格 */
         #block-right-bottom {
             display: flex;
             flex-direction: column-reverse; 
@@ -260,119 +226,56 @@
             padding: 4px 10px;
         }
 
-        /* ③ 强控独立沙盒格：允许上下手动翻阅，绝对不越界 */
         .text-yao-display {
-            height: 15.8%; /* 严密锁定单个爻位的总高范围 */
+            height: 15.8%; 
             display: flex;
             flex-direction: column;
-            justify-content: flex-start; /* 滚动内容置顶对齐 */
+            justify-content: flex-start; 
             border-bottom: 1px dashed rgba(0, 0, 0, 0.04);
             padding: 2px 0;
-            
-            /* ③ 核心升级：开启纵向局部手势滚动，隐藏溢出 */
             overflow-y: auto; 
             overflow-x: hidden;
-            -webkit-overflow-scrolling: touch; /* 保证手机端丝滑的阻尼滚动感 */
+            -webkit-overflow-scrolling: touch;
         }
         .text-yao-display:first-child { border-bottom: none; }
+        .text-yao-display::-webkit-scrollbar { display: none; }
 
-        /* ③ 隐藏各爻格内部的原生粗糙滚动条，保持画面干净无瑕 */
-        .text-yao-display::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* ③ 爻辞主文本行：缩减字距与标点间距，实现高紧凑排版 */
         .yao-text-line {
-            font-weight: bold; 
-            color: #2b2b2b;
-            line-height: 1.22; 
-            letter-spacing: -0.2px; /* 缩小文字字距 */
-            text-align: justify;
-            display: block;
+            font-weight: bold; color: #2b2b2b; line-height: 1.22; letter-spacing: -0.2px; text-align: justify; display: block;
         }
 
-        /* ③ 小象辞文本行：显著变小，缩减字距 */
         .yao-text-line i {
-            font-style: normal;
-            font-weight: normal; 
-            color: #555;
-            line-height: 1.22; 
-            letter-spacing: -0.2px; /* 缩小文字字距 */
-            text-align: justify;
-            display: block;
-            margin-top: 2px;
+            font-style: normal; font-weight: normal; color: #555; line-height: 1.22; letter-spacing: -0.2px; text-align: justify; display: block; margin-top: 2px;
         }
 
-        /* ② 最下面一行的使用说明栏样式 */
         .footer-instructions {
-            width: 100%;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: #777;
-            letter-spacing: 1px;
-            font-weight: bold;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+            width: 100%; height: 25px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #777; letter-spacing: 1px; font-weight: bold; text-shadow: 0 1px 0 rgba(255,255,255,0.6);
         }
     </style>
 </head>
 <body>
 
-    <!-- 主架构容器 -->
     <div class="main-layout">
         <div class="grid-container">
-            
-            <!-- 【左上】：卦名区 -->
-            <div id="block-left-top" class="card">
-                <div class="guaname-bg">
-                    <div id="ui-name-container" class="name-display"></div>
-                </div>
-            </div>
-
-            <!-- 【右上】：大象传 -->
+            <div id="block-left-top" class="card"><div class="guaname-bg"><div id="ui-name-container" class="name-display"></div></div></div>
             <div id="block-right-top" class="card">
-                <div class="daxiang-first-line">
-                    <div class="daxiang-img"></div>
-                    <div id="ui-daxiang-l1" class="daxiang-txt1"></div> 
-                </div>
-                <div id="ui-daxiang-l2" class="daxiang-second-line"></div> 
+                <div class="daxiang-first-line"><div class="daxiang-img"></div><div id="ui-daxiang-l1" class="daxiang-txt1"></div></div>
+                <div id="ui-daxiang-l2" class="daxiang-second-line"></div>
             </div>
-
-            <!-- 【左中】：卦辞区 -->
-            <div id="block-left-middle" class="card">
-                <div id="ui-guaci" class="card-content"></div>
-            </div>
-
-            <!-- 【右中】：彖传区 -->
-            <div id="block-right-middle" class="card">
-                <div class="corner-icon"></div>
-                <div class="below-icon-content">
-                    <div id="ui-tuan" class="card-content"></div>
-                </div>
-            </div>
-
-            <!-- 【左下】：六爻条图形区 -->
+            <div id="block-left-middle" class="card"><div id="ui-guaci" class="card-content"></div></div>
+            <div id="block-right-middle" class="card"><div class="corner-icon"></div><div class="below-icon-content"><div id="ui-tuan" class="card-content"></div></div></div>
             <div id="block-left-bottom" class="card"></div>
-
-            <!-- 【右下】：爻辞与小象独立滚动区 -->
             <div id="block-right-bottom" class="card"></div>
-
         </div>
     </div>
 
-    <!-- ② 最底部的说明栏 -->
-    <div class="footer-instructions">
-        -- 点击六爻 · 阴阳变化 · 经文随之 --
-    </div>
+    <div class="footer-instructions">-- 点击六爻 · 阴阳变化 · 经文随之 --</div>
 
     <script>
         let state = [1, 1, 1, 1, 1, 1]; 
 
-        // 智能动态单体字号计算
         function autoFontSize(text, maxLen, minSize, maxSize) {
-            if (!text) return minSize + "px";
+            if (!text || text.length === 0) return maxSize + "px";
             const len = text.length;
             if (len <= 10) return maxSize + "px";
             if (len >= maxLen) return minSize + "px";
@@ -380,7 +283,6 @@
             return Math.max(minSize, Math.min(maxSize, size)) + "px";
         }
 
-        // 核心渲染引擎
         function render() {
             const data = window.IChingData || window.GUA || {};
             const currentKey = [...state].join('');
@@ -388,20 +290,16 @@
             
             if (!currentGua) return;
 
-            // 1. 渲染左上：卦名自适应
+            // 1. 卦名
             const nameContainer = document.getElementById('ui-name-container');
             const gName = currentGua.name || "卦";
             if (gName.length === 1) {
                 nameContainer.innerHTML = `<div class="name-single">${gName}</div>`;
             } else {
-                nameContainer.innerHTML = `
-                    <div class="name-double">
-                        <span class="char1">${gName.charAt(0)}</span>
-                        <span class="char2">${gName.charAt(1)}</span>
-                    </div>`;
+                nameContainer.innerHTML = `<div class="name-double"><span class="char1">${gName.charAt(0)}</span><span class="char2">${gName.charAt(1)}</span></div>`;
             }
 
-            // 2. 渲染右上：大象传首行混排
+            // 2. 大象
             const dxRaw = currentGua.daxiang || "";
             const dxMatch = dxRaw.match(/(.*?。)(君子以.*|先王以.*|后以.*)/);
             const l1Box = document.getElementById('ui-daxiang-l1');
@@ -411,21 +309,20 @@
                 l2Box.innerText = dxMatch[2];
                 l2Box.style.fontSize = autoFontSize(dxMatch[2], 30, 11, 14.5);
             } else {
-                l1Box.innerText = dxRaw;
-                l2Box.innerText = "";
+                l1Box.innerText = dxRaw; l2Box.innerText = "";
             }
 
-            // 3. ① 渲染左中：卦辞（缩小微调，顶格开始）
+            // 3. 卦辞
             const gcBox = document.getElementById('ui-guaci');
             gcBox.innerText = currentGua.guaci || "";
             gcBox.style.fontSize = autoFontSize(currentGua.guaci, 35, 14, 20);
 
-            // 4. ① 渲染右中：彖传（缩小微调，顶格起排）
+            // 4. 彖传
             const tuanBox = document.getElementById('ui-tuan');
             tuanBox.innerText = currentGua.tuan || "";
             tuanBox.style.fontSize = autoFontSize(currentGua.tuan, 160, 11, 15);
 
-            // 5. 渲染左下（交互爻条）与 右下（滑动沙盒爻辞）
+            // 5. 六爻重绘
             const leftBottom = document.getElementById('block-left-bottom');
             const rightBottom = document.getElementById('block-right-bottom');
             
@@ -433,27 +330,36 @@
             rightBottom.innerHTML = '';
 
             state.forEach((s, i) => {
-                // ------ 左下：渲染拟真爻条 ------
+                // 左侧图形
                 const row = document.createElement('div');
                 row.className = 'row-yao';
                 const bar = document.createElement('div');
                 bar.className = 'bar-yao ' + (s ? 'yang' : 'yin');
                 bar.innerHTML = s ? '<div class="seg"></div>' : '<div class="seg"></div><div class="gap"></div><div class="seg"></div>';
-                bar.onclick = () => { state[i] = s ? 0 : 1; render(); };
+                
+                // 修复防穿透与闭包连动Bug
+                bar.onclick = function(e) {
+                    e.stopPropagation();
+                    state[i] = state[i] ? 0 : 1;
+                    render();
+                };
                 row.appendChild(bar);
                 leftBottom.appendChild(row);
 
-                // ------ 右下：③ 纯净数据洗除，开辟具备独立滑动特性的文字沙盒 ------
+                // 右侧文本
                 const textDisplay = document.createElement('div');
                 textDisplay.className = 'text-yao-display';
                 
                 const y = (currentGua.yao && currentGua.yao[i]) ? currentGua.yao[i] : ["", ""];
                 
-                // 彻底清洗干净可能残留的爻位数字和标点标签
-                const cleanYao = y[0].replace(/^[初二三四五上九六\s，、：]+/, "").trim();
-                const cleanXiang = y[1].replace(/^[象曰\s，、：]+/, "").trim();
+                /* 
+                   💡 核心修复：精准标签切除正则！
+                   不再暴力模糊匹配开头汉字，而是采用极其严密的结构化过滤：
+                   过滤形如 ^(初九|初六|九二|六二|九三|六三|九四|六四|九五|六五|上九|上六) 紧跟标点符号的组合。
+                */
+                const cleanYao = y[0].replace(/^(初|二|三|四|五|上)(九|六)(：|，|、|\s)?/, "").trim();
+                const cleanXiang = y[1].replace(/^(象曰)(：|，|、|\s)?/, "").trim();
 
-                // 设定基础合理字号，字数若极大则启动自适应收缩
                 const yaoSize = autoFontSize(cleanYao, 35, 11, 13.5);
                 const xiangSize = autoFontSize(cleanXiang, 35, 9.5, 11.5);
 
@@ -463,13 +369,10 @@
                 `;
                 
                 rightBottom.appendChild(textDisplay);
-                
-                // 每次数据更新重绘后，重置滚动条位置回顶部
                 textDisplay.scrollTop = 0;
             });
         }
 
-        // 数据文件时序异步轮询
         const dataChecker = setInterval(() => {
             const checkData = window.IChingData || window.GUA;
             if (checkData && Object.keys(checkData).length > 0) {

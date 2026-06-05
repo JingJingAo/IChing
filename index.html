@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>易经六十四卦 · 比例复刻版</title>
-    <script src="./data simple.js"></script>
+    
+    <!-- 修正文件名空格问题：使用 %20 替代空格 -->
+    <script src="./data%20simple.js"></script>
     
     <style>
         @font-face { 
@@ -22,129 +24,126 @@
         
         html, body { 
             height: 100%; width: 100%; overflow: hidden; margin: 0; padding: 0; 
-            background-image: url('./images/界面背景.png');
-            background-size: cover; background-position: center;
         }
         
         body { 
             display: flex; flex-direction: column;
+            /* 全屏背景图 */
+            background-image: url('./images/界面背景.png');
+            background-size: cover; background-position: center;
             padding: env(safe-area-inset-top) 5% env(safe-area-inset-bottom);
         }
 
-        /* 主容器：撑满屏幕但保持图片布局比例 */
+        /* 主布局：严格复刻图片三段式 */
         .yj-main-layout {
             flex: 1; display: grid;
-            grid-template-columns: 0.9fr 1.1fr; /* 左右比例微调 */
-            grid-template-rows: 1.2fr 1.8fr 4fr; /* 上中下比例 */
+            grid-template-columns: 1fr 1.2fr; /* 左右分栏比例 */
+            grid-template-rows: 1.2fr 1.8fr 4fr; /* 上中下高度比例 */
             gap: 20px 40px;
             padding: 20px 0;
             max-width: 1000px; margin: 0 auto; width: 100%;
         }
 
-        /* --- 左侧模块 --- */
-        /* 卦名：直接贴在背景图上 */
+        /* --- 1. 顶部：卦名(左) & 大象(右) --- */
         .left-top-name {
             display: flex; align-items: center; justify-content: flex-start;
             background-image: url('./images/卦名背景.png');
             background-size: contain; background-repeat: no-repeat; background-position: left center;
-            font-size: clamp(40px, 10vw, 70px); font-weight: 600; padding-left: 10px;
+            font-size: clamp(45px, 12vw, 80px); font-weight: 600; padding-left: 10px;
         }
 
-        /* 卦辞：居中对齐 */
-        .left-mid-guaci {
-            display: flex; align-items: center;
-            font-size: clamp(20px, 5vw, 28px); line-height: 1.5; font-weight: 600;
-            padding-right: 20px;
-        }
-
-        /* --- 右侧模块 --- */
-        /* 大象传：图左文右，文字分两行 */
-        .right-top-xiang {
-            display: flex; align-items: center; gap: 15px;
-        }
+        .right-top-xiang { display: flex; align-items: center; gap: 15px; }
         .img-xiang-icon {
             width: 60px; height: 60px; flex: 0 0 60px;
             background-image: url('./images/大象.png'); background-size: contain; background-repeat: no-repeat;
         }
-        .xiang-text-box { font-size: clamp(14px, 3.5vw, 18px); line-height: 1.4; font-weight: 600; }
+        .xiang-text-box { font-size: clamp(15px, 3.8vw, 19px); line-height: 1.4; font-weight: 600; }
         .xiang-text-box b { display: block; font-weight: 500; font-size: 0.9em; color: var(--ink-soft); margin-top: 4px; }
 
-        /* 彖传：渐变背景块 */
+        /* --- 2. 中部：卦辞(左) & 彖传(右) --- */
+        .left-mid-guaci {
+            display: flex; align-items: center;
+            font-size: clamp(22px, 5.5vw, 30px); line-height: 1.5; font-weight: 600;
+            padding-right: 15px;
+        }
+
         .right-mid-tuan {
             background-image: url('./images/彖传背景.png'); background-size: cover;
-            border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: 8px; padding: 18px; display: flex; flex-direction: column; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
         }
-        .tuan-inner { font-size: clamp(12px, 3vw, 15px); line-height: 1.6; text-align: justify; }
+        .tuan-inner { font-size: clamp(13px, 3.2vw, 16px); line-height: 1.6; text-align: justify; }
 
-        /* --- 底部六爻区域：左右严格对齐 --- */
+        /* --- 3. 底部：六爻(左爻右辞) --- */
         .bottom-full-area {
             grid-column: 1 / 3; display: flex; flex-direction: column; justify-content: space-between;
+            padding-top: 10px;
         }
         .yao-row {
-            display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 40px; align-items: center;
-            padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
+            display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center;
+            padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.06);
         }
 
-        /* 爻条样式 */
-        .line-box { height: clamp(24px, 5vh, 36px); width: 100%; display: flex; gap: 10px; cursor: pointer; }
-        .seg { height: 100%; transition: all 0.2s; }
+        .line-box { height: clamp(28px, 5.5vh, 40px); width: 100%; display: flex; gap: 12px; cursor: pointer; }
+        .seg { height: 100%; transition: transform 0.1s; }
         .line-box.yang .seg { flex: 1; background: #1a1a1a; border-radius: 2px; }
         .line-box.yin .seg { flex: 1; background: #999; border-radius: 20px; }
         .line-box.yin .gap { flex: 0 0 20px; }
 
-        /* 爻辞样式 */
-        .text-box { font-size: clamp(12px, 3.2vw, 15px); line-height: 1.35; font-weight: 600; }
-        .text-box i { display: block; font-style: normal; font-size: 0.85em; font-weight: 400; color: var(--ink-soft); margin-top: 2px; }
+        .text-box { font-size: clamp(13px, 3.4vw, 16px); line-height: 1.4; font-weight: 600; }
+        .text-box i { display: block; font-style: normal; font-size: 0.85em; font-weight: 400; color: var(--ink-soft); margin-top: 3px; }
 
-        .yj-footer { position: absolute; bottom: 5px; width: 100%; text-align: center; font-size: 9px; opacity: 0.4; letter-spacing: 2px; }
+        .yj-footer { position: absolute; bottom: 8px; width: 100%; text-align: center; font-size: 10px; opacity: 0.4; letter-spacing: 2px; }
 
-        /* 手机端适配：保持比例，缩小间距 */
         @media (max-width: 500px) {
             .yj-main-layout { gap: 10px 20px; }
             .yao-row { gap: 20px; }
-            .img-xiang-icon { width: 45px; height: 45px; flex: 0 0 45px; }
+            .img-xiang-icon { width: 50px; height: 50px; flex: 0 0 50px; }
         }
     </style>
 </head>
 <body>
 
 <div class="yj-main-layout">
-    <!-- 第一层 -->
     <div class="left-top-name" id="yjGuaName"></div>
     <div class="right-top-xiang">
         <div class="img-xiang-icon"></div>
         <div class="xiang-text-box" id="yjDaxiang"></div>
     </div>
 
-    <!-- 第二层 -->
     <div class="left-mid-guaci" id="yjGuaci"></div>
     <div class="right-mid-tuan">
         <div class="tuan-inner" id="yjTuan"></div>
     </div>
 
-    <!-- 第三层：六爻 -->
     <div class="bottom-full-area" id="yjMainContent"></div>
 </div>
 
-<div class="yj-footer">点击爻条 · 体验阴阳变化</div>
+<div class="yj-footer">点击爻条 · 阴阳交替</div>
 
 <script>
+    // 初始状态
     let state = [1,0,1,0,0,1]; 
 
     function render() {
         const k = state.join('');
-        if (typeof GUA === 'undefined' || !GUA[k]) return;
+        // 关键：检查数据对象是否存在
+        if (typeof GUA === 'undefined') {
+            document.body.innerHTML = "<div style='padding:50px; text-align:center;'>数据文件加载失败，请确保 data simple.js 已上传至 GitHub 且文件名正确。</div>";
+            return;
+        }
+        
         const g = GUA[k];
+        if (!g) return;
 
         document.getElementById('yjGuaName').innerText = g.name;
         document.getElementById('yjGuaci').innerText = g.guaci;
         document.getElementById('yjTuan').innerText = g.tuan;
         
-        // 大象传：严格分两行
+        // 大象传分行逻辑
         const dxParts = g.daxiang.split(/[。！？]/).filter(p => p.trim() !== '');
         if (dxParts.length >= 2) {
-            document.getElementById('yjDaxiang').innerHTML = `${dxParts[0]}。<br><b>${dxParts[1]}。</b>`;
+            document.getElementById('yjDaxiang').innerHTML = dxParts[0] + `。<br><b>` + dxParts[1] + `。</b>`;
         } else {
             document.getElementById('yjDaxiang').innerText = g.daxiang;
         }
@@ -152,22 +151,19 @@
         const mainBox = document.getElementById('yjMainContent');
         mainBox.innerHTML = '';
         
-        // 渲染六爻
         state.forEach((s, i) => {
             const row = document.createElement('div');
             row.className = 'yao-row';
             
-            // 左：爻条
             const l = document.createElement('div');
             l.className = 'line-box ' + (s ? 'yang' : 'yin');
             l.innerHTML = s ? '<div class="seg"></div>' : '<div class="seg"></div><div class="gap"></div><div class="seg"></div>';
             l.onclick = () => { state[i] = state[i] ? 0 : 1; render(); };
             
-            // 右：爻辞
             const textWrap = document.createElement('div');
             textWrap.className = 'text-box';
             const yaoData = g.yao[i];
-            textWrap.innerHTML = `${yaoData[0]}<i>象曰：${yaoData[1]}</i>`;
+            textWrap.innerHTML = yaoData[0] + `<i>象曰：` + yaoData[1] + `</i>`;
             
             row.appendChild(l);
             row.appendChild(textWrap);
@@ -175,7 +171,17 @@
         });
     }
 
-    window.onload = () => { setTimeout(render, 300); };
+    // 增加容错：确保脚本加载后再执行
+    window.onload = () => { 
+        setTimeout(() => {
+            if (typeof GUA === 'undefined') {
+                console.error("GUA data not found. Retrying...");
+                location.reload(); 
+            } else {
+                render();
+            }
+        }, 500); 
+    };
 </script>
 </body>
 </html>

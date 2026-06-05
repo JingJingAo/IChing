@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>易经六十四卦 · 比例复刻版</title>
     
-    <script>
-        document.write('<script src="./data_simple.js?t=' + new Date().getTime() + '"><\/script>');
-    </script>
-    
     <style>
         /* 1. 注册专属字体 */
         @font-face { 
@@ -30,7 +26,7 @@
             overflow: hidden; 
             margin: 0; 
             padding: 0; 
-            background: #f7f5f0; /* 兜底古风素色 */
+            background: #f7f5f0; 
         }
 
         body { 
@@ -40,7 +36,7 @@
             padding: calc(10px + env(safe-area-inset-top)) 15px calc(10px + env(safe-area-inset-bottom)) 15px;
         }
 
-        /* 3. 顶部区域：大象传（严格控制高度，防止挤压） */
+        /* 3. 顶部区域：大象传 */
         .header-xiang {
             display: flex;
             align-items: center;
@@ -53,7 +49,7 @@
         }
 
         .xiang-icon {
-            width: 32px;      /* 缩小左侧图标尺寸，腾出文本空间 */
+            width: 32px;      
             height: 32px;
             margin-right: 12px;
             flex-shrink: 0;
@@ -136,11 +132,11 @@
             right: 12px;
         }
 
-        /* 5. 核心交互：自下而上的六爻列表 */
+        /* 5. 自下而上的六爻列表 */
         .yao-list-box {
             flex-grow: 1;
             display: flex;
-            flex-direction: column-reverse; /* 关键：反向排列，让数据数组[0]渲染在视觉最下方（初爻） */
+            flex-direction: column-reverse; /* 关键铁律：让初爻渲染在最下方 */
             justify-content: space-around;
             background: rgba(255, 255, 255, 0.4);
             border-radius: 14px;
@@ -155,7 +151,6 @@
             padding: 0 4px;
         }
 
-        /* 爻块交互触控区 */
         .bar-yao {
             width: 110px;
             height: 28px;
@@ -166,14 +161,12 @@
             margin-right: 12px;
         }
 
-        /* 阳爻与阴爻的几何复刻结构 */
         .seg { background: #1a1a1a; height: 100%; transition: background 0.2s; }
         .gap { background: transparent; height: 100%; width: 18%; }
 
         .yang .seg { width: 100%; border-radius: 3px; }
         .yin .seg { width: 41%; border-radius: 3px; }
 
-        /* 爻辞与象曰文本 */
         .text-yao {
             flex-grow: 1;
             font-size: 13px;
@@ -210,14 +203,16 @@
     </div>
 
     <script>
-        // 初始化初始状态：1代表阳爻，0代表阴爻
-        // 铁律：state[0]为最下方的初爻，state[5]为最上方的上爻
+        document.write('<script src="./data_simple.js?t=' + new Date().getTime() + '" onload="initIChing()"><\/script>');
+    </script>
+    
+    <script>
+        // 铁律状态：state[0]为最下方的初爻，state[5]为最上方的上爻
         let state = [1, 1, 1, 1, 1, 1]; 
 
-        // 大象传文本格式化切割函数
+        // 大象传智能换行
         function formatDaxiang(dx) {
             if (!dx) return "六爻乾坤，变在其中。";
-            // 匹配易经大象传常见的转向断句节点
             const match = dx.match(/(.*?。)(君子以.*|先王以.*|后以.*)/);
             if (match) {
                 return `${match[1]}<br>${match[2]}`;
@@ -227,19 +222,19 @@
 
         // 核心渲染引擎
         function render() {
-            const data = window.IChingData || {};
+            // 兼容可能出现的各种挂载形式，防空处理
+            const data = window.IChingData || window.GUA || {};
             
-            // 铁律映射：直接自左向右拼装（初爻在最左，上爻在最右）
-            const currentKey = state.join('');
-            const currentGua = data[currentKey] || { name: "未知", guaci: "", daxiang: "", yao: [] };
+            // 铁律：左边第一位代表初爻(state[0])，右边最后一位代表上爻(state[5])
+            const currentKey = [...state].join('');
+            const currentGua = data[currentKey] || { name: "未知卦", guaci: "", daxiang: "尚未获取到大象传", yao: [] };
 
-            // 1. 处理大象传切分两行显示
+            // 1. 渲染大象传
             document.getElementById('ui-xiang').innerHTML = formatDaxiang(currentGua.daxiang);
 
-            // 2. 动态自适应卦名与圆形底图布局
+            // 2. 动态布局卦名
             const nameContainer = document.getElementById('ui-name-container');
             const gName = currentGua.name || "卦";
-            
             if (gName.length === 1) {
                 nameContainer.innerHTML = `<div class="name-single">${gName}</div>`;
             } else {
@@ -250,28 +245,23 @@
                     </div>`;
             }
 
-            // 3. 构建六爻视图结构
+            // 3. 构建六爻视图
             const list = document.getElementById('ui-yao-list');
-            list.innerHTML = ''; // 清空原有节点
+            list.innerHTML = ''; 
 
-            // 依据 state 顺序生成节点。因父级容器设为 flex-direction: column-reverse，
-            // 数组第0项（初爻）将会完美沉在设备屏幕的最底部。
             state.forEach((s, i) => {
                 const row = document.createElement('div');
                 row.className = 'row-yao';
 
-                // 爻象几何图形部分
                 const bar = document.createElement('div');
                 bar.className = 'bar-yao ' + (s ? 'yang' : 'yin');
                 bar.innerHTML = s ? '<div class="seg"></div>' : '<div class="seg"></div><div class="gap"></div><div class="seg"></div>';
                 
-                // 点击直接取反切换状态并重绘
                 bar.onclick = () => { 
                     state[i] = s ? 0 : 1; 
                     render(); 
                 };
 
-                // 爻辞文本处理
                 const txt = document.createElement('div');
                 txt.className = 'text-yao';
                 const y = (currentGua.yao && currentGua.yao[i]) ? currentGua.yao[i] : ["", ""];
@@ -283,13 +273,10 @@
             });
         }
 
-        // 定时轮询确保异步数据加载成功后首次唤醒渲染
-        const timer = setInterval(() => {
-            if (window.IChingData) {
-                clearInterval(timer);
-                render();
-            }
-        }, 100);
+        // 文件加载完毕后百分之百自动触发的入口
+        function initIChing() {
+            render();
+        }
     </script>
 </body>
 </html>

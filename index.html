@@ -3,122 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>易经六十四卦 · 比例复刻版</title>
+    <title>易经六十四卦 · 交互全息版</title>
     
-    <!-- 强制不缓存，确保每次都读到你最新的 data_simple.js -->
-    <script src="data_simple.js?t=123456"></script>
+    <!-- 引入数据文件 -->
+    <script src="./data_simple.js"></script>
     
     <style>
+        /* 1. 字体定义 */
         @font-face { 
             font-family: 'MiLanting'; 
             src: url('./fonts/MI_LanTing_Regular.ttf') format('truetype'); 
             font-display: swap; 
         }
-        :root { --ink: #1a1a1a; --ink-soft: #444; }
+
+        :root {
+            --ink: #1a1a1a;
+            --ink-soft: #444;
+            --radius-md: 8px;
+        }
+
+        /* 2. 全局重置 */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'MiLanting', sans-serif !important; }
-        html, body { height: 100%; width: 100%; overflow: hidden; margin: 0; padding: 0; }
+        
+        html, body { 
+            height: 100%; width: 100%; overflow: hidden; margin: 0; padding: 0; 
+        }
+        
         body { 
             display: flex; flex-direction: column;
             background: url('./images/界面背景.png') center/cover no-repeat fixed;
             padding: env(safe-area-inset-top) 5% env(safe-area-inset-bottom);
         }
-        .layout {
-            flex: 1; display: grid; grid-template-columns: 1fr 1.2fr;
-            grid-template-rows: 1.2fr 1.8fr 4fr; gap: 20px 40px;
-            max-width: 1000px; margin: 0 auto; width: 100%; visibility: hidden;
+
+        /* 3. 主布局系统：复刻图片 3:4 比例 */
+        .layout-master {
+            flex: 1; display: grid;
+            grid-template-columns: 1fr 1.2fr; /* 左右分栏 */
+            grid-template-rows: 1.2fr 1.8fr 4fr; /* 上中下高度比例 */
+            gap: 20px 40px;
+            padding: 20px 0;
+            max-width: 1000px; margin: 0 auto; width: 100%;
+            visibility: hidden; /* 初始隐藏，数据载入后显示 */
         }
-        .gua-name {
-            display: flex; align-items: center; background: url('./images/卦名背景.png') left center/contain no-repeat;
+
+        /* --- 第一层：卦名(左) & 大象(右) --- */
+        .box-name {
+            display: flex; align-items: center; justify-content: flex-start;
+            background: url('./images/卦名背景.png') left center/contain no-repeat;
             font-size: clamp(40px, 11vw, 80px); font-weight: 600; padding-left: 10px;
         }
-        .xiang-box { display: flex; align-items: center; gap: 15px; }
-        .xiang-icon { width: 60px; height: 60px; flex: 0 0 60px; background: url('./images/大象.png') center/contain no-repeat; }
-        .xiang-text { font-size: clamp(15px, 3.8vw, 19px); line-height: 1.4; font-weight: 600; }
-        .xiang-text b { display: block; font-weight: 500; font-size: 0.9em; color: var(--ink-soft); margin-top: 4px; }
-        .guaci { display: flex; align-items: center; font-size: clamp(22px, 5.5vw, 32px); font-weight: 600; }
-        .tuan-box { background: url('./images/彖传背景.png') center/cover no-repeat; border-radius: 8px; padding: 18px; display: flex; align-items: center; }
-        .tuan-text { font-size: clamp(13px, 3.2vw, 16px); line-height: 1.6; text-align: justify; }
-        .yao-area { grid-column: 1 / 3; display: flex; flex-direction: column; justify-content: space-between; padding-top: 10px; }
-        .yao-row { display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.06); padding: 8px 0; }
-        .yao-bar { height: clamp(28px, 5.5vh, 40px); display: flex; gap: 12px; cursor: pointer; }
+
+        .box-xiang { display: flex; align-items: center; gap: 15px; }
+        .icon-xiang {
+            width: 60px; height: 60px; flex: 0 0 60px;
+            background: url('./images/大象.png') center/contain no-repeat;
+        }
+        .text-xiang { font-size: clamp(15px, 3.8vw, 19px); line-height: 1.45; font-weight: 600; }
+        .text-xiang b { display: block; font-weight: 500; font-size: 0.9em; color: var(--ink-soft); margin-top: 4px; }
+
+        /* --- 第二层：卦辞(左) & 彖传(右) --- */
+        .box-guaci {
+            display: flex; align-items: center;
+            font-size: clamp(20px, 5.5vw, 30px); line-height: 1.5; font-weight: 600;
+            padding-right: 15px;
+        }
+
+        .box-tuan {
+            background: url('./images/彖传背景.png') center/cover no-repeat;
+            border-radius: var(--radius-md); padding: 18px; 
+            display: flex; flex-direction: column; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+        .text-tuan { font-size: clamp(12px, 3.2vw, 16px); line-height: 1.6; text-align: justify; }
+
+        /* --- 第三层：六爻区域 --- */
+        .area-yao {
+            grid-column: 1 / 3; display: flex; flex-direction: column; justify-content: space-between;
+            padding-top: 10px;
+        }
+        .row-yao {
+            display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .bar-yao { height: clamp(28px, 5.5vh, 40px); width: 100%; display: flex; gap: 12px; cursor: pointer; }
         .seg { height: 100%; }
-        .yao-bar.yang .seg { flex: 1; background: #1a1a1a; border-radius: 2px; }
-        .yao-bar.yin .seg { flex: 1; background: #999; border-radius: 20px; }
-        .yao-bar.yin .gap { flex: 0 0 20px; }
-        .yao-txt { font-size: clamp(13px, 3.4vw, 16px); line-height: 1.4; font-weight: 600; }
-        .yao-txt i { display: block; font-style: normal; font-size: 0.85em; font-weight: 400; color: var(--ink-soft); margin-top: 3px; }
-        #msg { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 18px; text-align: center; color: #666; }
+        .bar-yao.yang .seg { flex: 1; background: #1a1a1a; border-radius: 2px; }
+        .bar-yao.yin .seg { flex: 1; background: #999; border-radius: 20px; }
+        .bar-yao.yin .gap { flex: 0 0 20px; }
+
+        .text-yao { font-size: clamp(13px, 3.4vw, 16px); line-height: 1.4; font-weight: 600; }
+        .text-yao i { display: block; font-style: normal; font-size: 0.85em; font-weight: 400; color: var(--ink-soft); margin-top: 3px; }
+
+        /* 加载提示 */
+        #tip { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 18px; color: #666; }
+
+        /* 手机适配 */
+        @media (max-width: 500px) {
+            .layout-master { gap: 10px 20px; }
+            .row-yao { gap: 20px; }
+            .icon-xiang { width: 50px; height: 50px; flex: 0 0 50px; }
+        }
     </style>
 </head>
 <body>
-    <div id="msg">正在载入数据，请稍候...</div>
-    <div class="layout" id="ui">
-        <div class="gua-name" id="n"></div>
-        <div class="xiang-box"><div class="xiang-icon"></div><div class="xiang-text" id="x"></div></div>
-        <div class="guaci" id="c"></div>
-        <div class="tuan-box"><div class="tuan-text" id="t"></div></div>
-        <div class="yao-area" id="l"></div>
+
+<div id="tip">正在载入经文数据...</div>
+
+<div class="layout-master" id="app">
+    <!-- 顶部 -->
+    <div class="box-name" id="ui-name"></div>
+    <div class="box-xiang">
+        <div class="icon-xiang"></div>
+        <div class="text-xiang" id="ui-xiang"></div>
     </div>
 
+    <!-- 中部 -->
+    <div class="box-guaci" id="ui-guaci"></div>
+    <div class="box-tuan">
+        <div class="text-tuan" id="ui-tuan"></div>
+    </div>
+
+    <!-- 底部 -->
+    <div class="area-yao" id="ui-yao-list"></div>
+</div>
+
 <script>
-    let state = [1,1,1,1,1,1]; // 初始乾卦
+    // 初始状态：讼卦 (010111)
+    let state = [1, 1, 1, 0, 1, 0]; 
 
     function render() {
+        // 1. 安全检查：确保 window.GUA 已经从 data_simple.js 加载
         const data = window.GUA;
         if (!data) return;
-        
-        const key = state.join('');
+
+        // 拼接 Key，注意数组顺序匹配
+        const key = state.slice().reverse().join('');
         const g = data[key];
         if (!g) {
-            document.getElementById('msg').innerText = "未匹配到卦象编码：" + key;
+            console.error("未找到卦象数据，Key:", key);
             return;
         }
 
-        document.getElementById('msg').style.display = 'none';
-        document.getElementById('ui').style.visibility = 'visible';
+        // 2. 界面显示切换
+        document.getElementById('tip').style.display = 'none';
+        document.getElementById('app').style.visibility = 'visible';
 
-        document.getElementById('n').innerText = g.name;
-        document.getElementById('c').innerText = g.guaci;
-        document.getElementById('t').innerText = g.tuan;
+        // 3. 填充基础内容
+        document.getElementById('ui-name').innerText = g.name;
+        document.getElementById('ui-guaci').innerText = g.guaci;
+        document.getElementById('ui-tuan').innerText = g.tuan;
 
-        // 大象传自动分行：第一个句号切分
+        // 4. 大象传自动分行：识别第一个句号
         const dx = g.daxiang || "";
-        const idx = dx.indexOf('。');
-        if (idx !== -1) {
-            document.getElementById('x').innerHTML = dx.substring(0, idx+1) + "<br><b>" + dx.substring(idx+1) + "</b>";
+        const dot = dx.indexOf('。');
+        if (dot !== -1) {
+            const p1 = dx.substring(0, dot + 1);
+            const p2 = dx.substring(dot + 1);
+            document.getElementById('ui-xiang').innerHTML = p1 + "<br><b>" + p2 + "</b>";
         } else {
-            document.getElementById('x').innerText = dx;
+            document.getElementById('ui-xiang').innerText = dx;
         }
 
-        const box = document.getElementById('l');
-        box.innerHTML = '';
+        // 5. 渲染六爻
+        const list = document.getElementById('ui-yao-list');
+        list.innerHTML = '';
         state.forEach((s, i) => {
             const row = document.createElement('div');
-            row.className = 'yao-row';
+            row.className = 'row-yao';
+
             const bar = document.createElement('div');
-            bar.className = 'yao-bar ' + (s ? 'yang' : 'yin');
+            bar.className = 'bar-yao ' + (s ? 'yang' : 'yin');
             bar.innerHTML = s ? '<div class="seg"></div>' : '<div class="seg"></div><div class="gap"></div><div class="seg"></div>';
-            bar.onclick = () => { state[i] = state[i] ? 0 : 1; render(); };
+            bar.onclick = () => {
+                state[i] = s ? 0 : 1;
+                render();
+            };
+
             const txt = document.createElement('div');
-            txt.className = 'yao-txt';
-            const y = g.yao[i] || ["", ""];
+            txt.className = 'text-yao';
+            const y = (g.yao && g.yao[i]) ? g.yao[i] : ["", ""];
             txt.innerHTML = y[0] + "<i>象曰：" + y[1] + "</i>";
-            row.appendChild(bar); row.appendChild(txt); box.appendChild(row);
+
+            row.appendChild(bar);
+            row.appendChild(txt);
+            list.appendChild(row);
         });
     }
 
-    // 每一秒检查一次数据是否载入
-    const check = setInterval(() => {
+    // 6. 轮询检查数据是否就绪
+    const timer = setInterval(() => {
         if (window.GUA) {
-            clearInterval(check);
+            clearInterval(timer);
             render();
         }
-    }, 1000);
+    }, 500);
 
-    // 15秒后如果还没载入，报错
+    // 超时提示
     setTimeout(() => {
         if (!window.GUA) {
-            document.getElementById('msg').innerHTML = "<b>数据加载失败</b><br>请确保 data_simple.js 与 index.html 在同一文件夹<br>且文件内开头是 window.GUA = {";
+            document.getElementById('tip').innerHTML = "数据加载失败<br><small>请检查 data_simple.js 是否包含 window.GUA = { ... }</small>";
         }
     }, 15000);
 </script>

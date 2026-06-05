@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>易经六十四卦 · 比例复刻版</title>
+    
+    <script>
+        document.write('<script src=\"./data_simple.js?t=' + new Date().getTime() + '\"><\\/script>');
+    </script>
+    
+    <style>
+        @font-face { 
+            font-family: 'MiLanting'; 
+            src: url('./fonts/MI_LanTing_Regular.ttf') format('truetype'); \r
+            font-display: swap; 
+        }
+        :root { --ink: #1a1a1a; --ink-soft: #444; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'MiLanting', sans-serif !important; }
+        
+        html, body { height: 100%; width: 100%; overflow: hidden; margin: 0; padding: 0; }
+        body { 
+            display: flex; flex-direction: column;
+            background: url('./images/界面背景.png') center/cover no-repeat fixed;
+        }
+
+        /* 顶部面板（固定高度） */
+        .panel-top {
+            flex: 0 0 115px; width: 100%;
+            background: url('./images/上框背景.png') center/cover no-repeat;
+            position: relative; display: flex; align-items: center; justify-content: center;
+        }
+        .text-guaci {
+            width: 80%; text-align: center; font-size: 14px; color: var(--ink-soft);
+            line-height: 1.5; padding: 0 10px;
+        }
+
+        /* 主体内容区（自适应剩余空间） */
+        .container-main {
+            flex: 1; width: 100%; display: flex; overflow: hidden;
+        }
+
+        /* 左侧：卦象区域 */
+        .box-left {
+            flex: 0 0 162.5px; height: 100%; display: flex; flex-direction: column;
+            background: url('./images/左半背景.png') center/cover no-repeat;
+        }
+        .box-name {
+            flex: 0 0 131.5px; width: 100%; display: flex; align-items: center; justify-content: center;
+        }
+        .text-name { font-size: 73.5px; font-weight: bold; color: var(--ink); text-align: center; }
+        
+        /* 六爻列表：易经自下而上，所以用 column-reverse */
+        .list-yao {
+            flex: 1; width: 100%; display: flex; flex-direction: column-reverse;
+            justify-content: space-around; padding: 10px 0 25px 0;
+        }
+        .row-yao { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        
+        /* 爻块按钮：增加手势指针和微弱的点击缩放效果 */
+        .bar-yao {
+            width: 111.5px; height: 15.5px; display: flex; justify-content: space-between;
+            position: relative; cursor: pointer; transition: transform 0.1s ease;
+        }
+        .bar-yao:active { transform: scale(0.96); }
+        
+        .bar-yao .seg { background: var(--ink); height: 100%; }
+        .bar-yao.yang .seg { width: 100%; }
+        .bar-yao.yin .seg { width: 46px; }
+        .bar-yao.yin .gap { width: 19.5px; height: 100%; }
+
+        /* 右侧：传文区域 */
+        .box-right {
+            flex: 1; height: 100%; display: flex; flex-direction: column; overflow: hidden;
+            background: url('./images/右半背景.png') center/cover no-repeat;
+        }
+        .tab-menu {
+            flex: 0 0 46px; width: 100%; display: flex; justify-content: space-around; align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05); padding: 0 10px;
+        }
+        .tab-item {
+            font-size: 15px; color: #777; cursor: pointer; padding: 5px 10px; position: relative;
+        }
+        .tab-item.active { color: var(--ink); font-weight: bold; }
+        .tab-item.active::after {
+            content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+            width: 16px; height: 2px; background: var(--ink);
+        }
+
+        .content-scroll {
+            flex: 1; width: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;
+            padding: 20px 25px 40px 20px;
+        }
+        .text-body {
+            font-size: 15.5px; color: var(--ink-soft); line-height: 1.8; text-align: justify;
+            white-space: pre-line;
+        }
+        .text-body i {
+            display: block; font-style: normal; color: #666; font-size: 14px; margin-top: 6px;
+            padding-left: 10px; border-left: 2px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="panel-top">
+        <div id="ui-guaci" class="text-guaci">正在加载易经数据...</div>
+    </div>
+
+    <div class="container-main">
+        <div class="box-left">
+            <div class="box-name">
+                <div id="ui-name" class="text-name">--</div>
+            </div>
+            <div id="ui-yao-list" class="list-yao"></div>
+        </div>
+
+        <div class="box-right">
+            <div class="tab-menu">
+                <div class="tab-item active" onclick="switchTab('tuan', this)">彖传</div>
+                <div class="tab-item" onclick="switchTab('xiang', this)">大象传</div>
+                <div class="tab-item" onclick="switchTab('yao', this)">爻辞传</div>
+            </div>
+            <div class="content-scroll">
+                <div id="ui-content" class="text-body">正在初始化内容...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始状态：1代表阳爻，0代表阴爻
+        // 数组顺序：[初爻, 二爻, 三爻, 四爻, 五爻, 上爻] （对应界面从下往上）
+        let state = [1, 1, 1, 1, 1, 1]; 
+        let currentTab = 'tuan'; // 当前右侧选中的分类
+
+        // 核心渲染函数
+        function render() {
+            if (!window.IChingData) return;
+
+            // 1. 将当前的 [1,1,1,1,1,1] 状态数组组合成 "111111" 这样的二进制字符串
+            // 因为你的数据定义里面 "100010"(屯卦) 是从初爻到上爻排列的，所以直接用 join('') 即可对齐
+            const binaryKey = state.join('');
+            
+            // 2. 从数据集获取对应的卦象，如果因为键名冲突或错漏找不到，做个防白屏兜底
+            let g = window.IChingData[binaryKey];
+            if (!g) {
+                // 兜底逻辑：处理找不到键名的情况
+                document.getElementById('ui-name').innerText = "？";
+                document.getElementById('ui-guaci').innerText = "未找到对应卦象数据，请检查 data_simple.js 的二进制 Key 是否正确。当前请求Key: " + binaryKey;
+                return;
+            }
+
+            // 3. 渲染左侧卦名与顶部卦辞
+            document.getElementById('ui-name').innerText = g.name || "--";
+            document.getElementById('ui-guaci').innerText = g.guaci || "无卦辞";
+
+            // 4. 渲染右侧文本（根据当前选中的 Tab）
+            const contentDiv = document.getElementById('ui-content');
+            if (currentTab === 'tuan') {
+                contentDiv.innerHTML = g.tuan || "暂无彖传内容。";
+            } else if (currentTab === 'xiang') {
+                contentDiv.innerHTML = g.daxiang || "暂无大象传内容。";
+            } else if (currentTab === 'yao') {
+                // 爻辞和小象传合并排版
+                if (g.yao && g.yao.length > 0) {
+                    let htmlStr = "";
+                    g.yao.forEach((y) => {
+                        // 防御性检查，防止类似 "六四 push" 导致的损坏数据崩溃
+                        let yaoCi = Array.isArray(y) ? y[0] : String(y);
+                        let象Ci = (Array.isArray(y) && y[1]) ? y[1] : "";
+                        
+                        htmlStr += `<div><b>${yaoCi}</b>`;
+                        if (象Ci) {
+                            htmlStr += `<i>象曰：${象Ci}</i>`;
+                        }
+                        htmlStr += `</div><br/>`;
+                    });
+                    contentDiv.innerHTML = htmlStr;
+                } else {
+                    contentDiv.innerHTML = "暂无爻辞数据。";
+                }
+            }
+
+            // 5. 动态渲染左侧的六个爻（利用 column-reverse 自动实现初爻在最下方）
+            const listContainer = document.getElementById('ui-yao-list');
+            listContainer.innerHTML = '';
+
+            state.forEach((s, i) => {
+                const row = document.createElement('div');
+                row.className = 'row-yao';
+
+                const bar = document.createElement('div');
+                // 如果是 1 则是阳卦类型，0 是阴卦类型
+                bar.className = 'bar-yao ' + (s ? 'yang' : 'yin');
+                
+                // 根据阴阳动态构建内部横条
+                if (s) {
+                    bar.innerHTML = '<div class="seg"></div>';
+                } else {
+                    bar.innerHTML = '<div class="seg"></div><div class="gap"></div><div class="seg"></div>';
+                }
+
+                // **核心交互：点击当前的爻，直接反转自身状态并重新触发大渲染**
+                bar.onclick = () => {
+                    state[i] = s ? 0 : 1;
+                    render();
+                };
+
+                row.appendChild(bar);
+                listContainer.appendChild(row);
+            });
+        }
+
+        // 右侧 Tab 切换函数
+        function switchTab(tabName, element) {
+            currentTab = tabName;
+            
+            // 切换高亮样式
+            const tabs = document.querySelectorAll('.tab-item');
+            tabs.forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+            
+            // 重新渲染右侧文本
+            render();
+        }
+
+        // 轮询检测：确保 data_simple.js 加载成功后立即启动渲染
+        const timer = setInterval(() => {
+            if (window.IChingData) {
+                clearInterval(timer);
+                render();
+            }
+        }, 100);
+
+        // 兜底超时提示
+        setTimeout(() => {
+            if (!window.IChingData) {
+                document.getElementById('ui-guaci').innerText = "数据加载超时，请检查 data_simple.js 文件路径是否正确或是否存在语法错误。";
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

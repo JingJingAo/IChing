@@ -45,7 +45,7 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            height: calc(100% - 25px); /* 扣除底部说明栏高度 */
+            height: calc(100% - 25px); 
         }
 
         .grid-container {
@@ -77,9 +77,7 @@
             width: 100%;
         }
 
-        /* ==================== 左侧区域 (2/5 宽度) ==================== */
-        
-        /* 左上：卦名区 */
+        /* ==================== 左侧区域 ==================== */
         #block-left-top {
             display: flex;
             align-items: center;
@@ -126,7 +124,6 @@
         .name-double .char1 { position: absolute; top: 6px; left: 10px; }
         .name-double .char2 { position: absolute; bottom: 6px; right: 10px; }
 
-        /* 卦辞区缩小、靠上开始对齐 */
         #block-left-middle {
             justify-content: flex-start; 
             align-items: flex-start;
@@ -134,7 +131,7 @@
         }
         #ui-guaci { text-align: left !important; }
 
-        /* 左下：六爻条交互区 */
+        /* 左下：六爻交互区（防穿透优化） */
         #block-left-bottom {
             display: flex;
             flex-direction: column-reverse;
@@ -156,6 +153,7 @@
             display: flex;
             justify-content: space-between;
             cursor: pointer;
+            touch-action: manipulation; /* 强控清除移动端双击延迟，提高单次点击响应率 */
         }
 
         .yang .seg { 
@@ -174,10 +172,7 @@
         
         .gap { background: transparent; height: 100%; width: 24%; }
 
-
-        /* ==================== 右侧区域 (3/5 宽度) ==================== */
-        
-        /* 右上大象区 */
+        /* ==================== 右侧区域 ==================== */
         #block-right-top {
             display: flex;
             flex-direction: column;
@@ -207,17 +202,14 @@
             width: 100%; margin-top: 3px; line-height: 1.25; color: #333; text-align: justify;
         }
 
-        /* 右中彖传区 */
         .corner-icon {
             position: absolute; left: 12px; top: 10px; width: 24px; height: 24px;
             background: url('./images/彖传.png') center/contain no-repeat;
         }
 
         .below-icon-content {
-            margin-top: 26px; /* 紧贴图片底部边缘 */
-            width: 100%; height: calc(100% - 26px);
-            display: flex; flex-direction: column; 
-            justify-content: flex-start; /* 顶格起排，不居中 */
+            margin-top: 26px; width: 100%; height: calc(100% - 26px);
+            display: flex; flex-direction: column; justify-content: flex-start;
         }
 
         #block-right-middle {
@@ -233,42 +225,28 @@
             padding: 4px 10px;
         }
 
-        /* 强控独立沙盒格：无任何正则过滤，100%防止逻辑崩溃，允许局部滑动 */
         .text-yao-display {
-            height: 15.8%; /* 严密锁定单个爻位的总高范围 */
+            height: 15.8%; 
             display: flex;
             flex-direction: column;
-            justify-content: flex-start; /* 内容置顶对齐 */
+            justify-content: flex-start; 
             border-bottom: 1px dashed rgba(0, 0, 0, 0.04);
             padding: 2px 0;
-            
-            overflow-y: auto; /* 开启纵向局部手势滚动 */
+            overflow-y: auto; 
             overflow-x: hidden;
-            -webkit-overflow-scrolling: touch; /* 手机端平滑阻尼 */
+            -webkit-overflow-scrolling: touch;
         }
         .text-yao-display:first-child { border-bottom: none; }
-        .text-yao-display::-webkit-scrollbar { display: none; } /* 隐藏原生粗糙滚动条 */
+        .text-yao-display::-webkit-scrollbar { display: none; }
 
         /* 爻辞主文本行 */
         .yao-text-line {
-            font-weight: bold; 
-            color: #2b2b2b;
-            line-height: 1.22; 
-            letter-spacing: -0.2px; /* 缩小字距，极致优雅排版 */
-            text-align: justify;
-            display: block;
+            font-weight: bold; color: #2b2b2b; line-height: 1.22; letter-spacing: -0.2px; text-align: justify; display: block;
         }
 
         /* 小象辞文本行 */
         .yao-text-line i {
-            font-style: normal;
-            font-weight: normal; 
-            color: #555;
-            line-height: 1.22; 
-            letter-spacing: -0.2px; /* 缩小字距 */
-            text-align: justify;
-            display: block;
-            margin-top: 2px;
+            font-style: normal; font-weight: normal; color: #555; line-height: 1.22; letter-spacing: -0.2px; text-align: justify; display: block; margin-top: 2px;
         }
 
         /* 最底部的说明栏样式 */
@@ -284,45 +262,37 @@
 
     <div class="main-layout">
         <div class="grid-container">
-            
-            <div id="block-left-top" class="card">
-                <div class="guaname-bg">
-                    <div id="ui-name-container" class="name-display"></div>
-                </div>
-            </div>
-
+            <div id="block-left-top" class="card"><div class="guaname-bg"><div id="ui-name-container" class="name-display"></div></div></div>
             <div id="block-right-top" class="card">
-                <div class="daxiang-first-line">
-                    <div class="daxiang-img"></div>
-                    <div id="ui-daxiang-l1" class="daxiang-txt1"></div> 
-                </div>
-                <div id="ui-daxiang-l2" class="daxiang-second-line"></div> 
+                <div class="daxiang-first-line"><div class="daxiang-img"></div><div id="ui-daxiang-l1" class="daxiang-txt1"></div></div>
+                <div id="ui-daxiang-l2" class="daxiang-second-line"></div>
             </div>
-
-            <div id="block-left-middle" class="card">
-                <div id="ui-guaci" class="card-content"></div>
-            </div>
-
-            <div id="block-right-middle" class="card">
-                <div class="corner-icon"></div>
-                <div class="below-icon-content">
-                    <div id="ui-tuan" class="card-content"></div>
-                </div>
-            </div>
-
+            <div id="block-left-middle" class="card"><div id="ui-guaci" class="card-content"></div></div>
+            <div id="block-right-middle" class="card"><div class="corner-icon"></div><div class="below-icon-content"><div id="ui-tuan" class="card-content"></div></div></div>
             <div id="block-left-bottom" class="card"></div>
-
             <div id="block-right-bottom" class="card"></div>
-
         </div>
     </div>
 
-    <div class="footer-instructions">
-        -- 点击六爻 · 阴阳变化 · 经文随之 --
-    </div>
+    <div class="footer-instructions">-- 点击六爻 · 阴阳变化 · 经文随之 --</div>
 
     <script>
-        let state = [1, 1, 1, 1, 1, 1]; 
+        // 全局状态数组
+        window.state = [1, 1, 1, 1, 1, 1]; 
+
+        // 💡 终极修复函数：全局解耦交互控制器
+        // 彻底抛弃闭包变量，通过传递真实的 DOM 节点获取其实时绑定的 data-index 属性，100%防止穿透与多爻连动！
+        window.handleYaoClick = function(element, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            const idx = parseInt(element.getAttribute('data-index'), 10);
+            if (!isNaN(idx)) {
+                window.state[idx] = window.state[idx] ? 0 : 1;
+                render();
+            }
+        };
 
         // 智能自适应字号
         function autoFontSize(text, maxLen, minSize, maxSize) {
@@ -337,7 +307,7 @@
         // 核心渲染引擎
         function render() {
             const data = window.IChingData || window.GUA || {};
-            const currentKey = [...state].join('');
+            const currentKey = [...window.state].join('');
             const currentGua = data[currentKey];
             
             if (!currentGua) return;
@@ -348,11 +318,7 @@
             if (gName.length === 1) {
                 nameContainer.innerHTML = `<div class="name-single">${gName}</div>`;
             } else {
-                nameContainer.innerHTML = `
-                    <div class="name-double">
-                        <span class="char1">${gName.charAt(0)}</span>
-                        <span class="char2">${gName.charAt(1)}</span>
-                    </div>`;
+                nameContainer.innerHTML = `<div class="name-double"><span class="char1">${gName.charAt(0)}</span><span class="char2">${gName.charAt(1)}</span></div>`;
             }
 
             // 2. 大象传首行混排
@@ -365,76 +331,70 @@
                 l2Box.innerText = dxMatch[2];
                 l2Box.style.fontSize = autoFontSize(dxMatch[2], 30, 11, 14.5);
             } else {
-                l1Box.innerText = dxRaw;
-                l2Box.innerText = "";
+                l1Box.innerText = dxRaw; l2Box.innerText = "";
             }
 
-            // 3. 卦辞（靠上对齐，顶格开始）
+            // 3. 卦辞
             const gcBox = document.getElementById('ui-guaci');
             gcBox.innerText = currentGua.guaci || "";
             gcBox.style.fontSize = autoFontSize(currentGua.guaci, 35, 14, 20);
 
-            // 4. 彖传（靠上对齐，不垂直居中）
+            // 4. 彖传
             const tuanBox = document.getElementById('ui-tuan');
             tuanBox.innerText = currentGua.tuan || "";
             tuanBox.style.fontSize = autoFontSize(currentGua.tuan, 160, 11, 15);
 
-            // 5. 渲染左下（交互爻条）与 右下（白文原文滑动格）
+            // 5. 渲染左下（物理传参交互爻条）与 右下（原文滑动格）
             const leftBottom = document.getElementById('block-left-bottom');
             const rightBottom = document.getElementById('block-right-bottom');
             
-            leftBottom.innerHTML = '';
-            rightBottom.innerHTML = '';
+            let leftHTML = '';
+            let rightHTML = '';
 
-            state.forEach((s, i) => {
-                // ------ 左下：渲染交互爻条 ------
-                const row = document.createElement('div');
-                row.className = 'row-yao';
-                const bar = document.createElement('div');
-                bar.className = 'bar-yao ' + (s ? 'yang' : 'yin');
-                bar.innerHTML = s ? '<div class="seg"></div>' : '<div class="seg"></div><div class="gap"></div><div class="seg"></div>';
+            // 采用一次性构建大字符串拼接，阻止 DOM 渲染树在循环中剧烈抖动导致的坐标飘移
+            for (let i = 0; i < 6; i++) {
+                const s = window.state[i];
+                const isYang = (s === 1);
                 
-                // 显式传入事件对象，安全、精准切反状态，杜绝误触
-                bar.onclick = function(e) {
-                    e.stopPropagation();
-                    state[i] = state[i] ? 0 : 1;
-                    render();
-                };
-                row.appendChild(bar);
-                leftBottom.appendChild(row);
+                // 左侧爻条图形组件字符串拼接
+                leftHTML += `
+                    <div class="row-yao">
+                        <div class="bar-yao ${isYang ? 'yang' : 'yin'}" 
+                             data-index="${i}" 
+                             onclick="window.handleYaoClick(this, event)">
+                             ${isYang ? '<div class="seg"></div>' : '<div class="seg"></div><div class="gap"></div><div class="seg"></div>'}
+                        </div>
+                    </div>
+                `;
 
-                // ------ 右下：展现完全无损的经文、传文白文原文 ------
-                const textDisplay = document.createElement('div');
-                textDisplay.className = 'text-yao-display';
-                
+                // 右侧无损白文传文拼接
                 const y = (currentGua.yao && currentGua.yao[i]) ? currentGua.yao[i] : ["", ""];
-                
-                // 💡 彻底移除所有的正则 replace 清洗，100%直接渲染原始文本，自带“初九、九二、象曰”
                 const rawYao = y[0].trim();
                 let rawXiang = y[1].trim();
-                
-                // 给小象辞补上古典名著排版规范中的“象曰：”前缀（如果原数据本身没包含的话）
                 if (rawXiang && !rawXiang.startsWith("象曰")) {
                     rawXiang = "象曰：" + rawXiang;
                 }
 
-                // 设定基础字号并启用柔性收缩算法
                 const yaoSize = autoFontSize(rawYao, 35, 11, 13);
                 const xiangSize = autoFontSize(rawXiang, 35, 9.5, 11.2);
 
-                textDisplay.innerHTML = `
-                    <span class="yao-text-line" style="font-size: ${yaoSize};">${rawYao}</span>
-                    <span class="yao-text-line" style="font-size: ${xiangSize};"><i>${rawXiang}</i></span>
+                rightHTML += `
+                    <div class="text-yao-display">
+                        <span class="yao-text-line" style="font-size: ${yaoSize};">${rawYao}</span>
+                        <span class="yao-text-line" style="font-size: ${xiangSize};"><i>${rawXiang}</i></span>
+                    </div>
                 `;
-                
-                rightBottom.appendChild(textDisplay);
-                
-                // 每次点击重绘时，重置所有格子的滚动条回最顶端
-                textDisplay.scrollTop = 0;
-            });
+            }
+
+            leftBottom.innerHTML = leftHTML;
+            rightBottom.innerHTML = rightHTML;
+
+            // 重置所有格子的滚动条回最顶端
+            const displays = rightBottom.querySelectorAll('.text-yao-display');
+            displays.forEach(d => d.scrollTop = 0);
         }
 
-        // 数据异步轮询
+        // 数据异步轮询启动
         const dataChecker = setInterval(() => {
             const checkData = window.IChingData || window.GUA;
             if (checkData && Object.keys(checkData).length > 0) {

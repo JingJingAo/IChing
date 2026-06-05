@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>易经六十四卦 · 比例复刻版</title>
+    <title>易经六十四卦 · 交互全息版</title>
     
-    <!-- 强制刷新缓存，确保读取最新的 data_simple.js -->
-    <script src="./data_simple.js?v=1.1"></script>
+    <!-- 引入外部数据文件 -->
+    <script src="./data_simple.js"></script>
     
     <style>
+        /* 字体加载 */
         @font-face { 
             font-family: 'MiLanting'; 
             src: url('./fonts/MI_LanTing_Regular.ttf') format('truetype'); 
@@ -18,175 +19,206 @@
         :root {
             --ink: #1a1a1a;
             --ink-soft: #444;
+            --radius-md: 8px;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'MiLanting', sans-serif !important; }
+        /* 全局样式重置 */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        html, body { height: 100%; width: 100%; overflow: hidden; margin: 0; padding: 0; }
+        html, body { 
+            height: 100%; width: 100%; overflow: hidden; 
+            margin: 0; padding: 0; 
+            font-family: 'MiLanting', sans-serif !important;
+        }
         
         body { 
             display: flex; flex-direction: column;
             background-image: url('./images/界面背景.png');
             background-size: cover; background-position: center;
-            padding: env(safe-area-inset-top) 5% env(safe-area-inset-bottom);
+            padding: env(safe-area-inset-top) 5vw env(safe-area-inset-bottom);
         }
 
-        /* 布局比例 */
-        .yj-main-layout {
+        /* 核心网格布局：复刻图片比例 */
+        .yj-master-layout {
             flex: 1; display: grid;
-            grid-template-columns: 1fr 1.2fr; 
-            grid-template-rows: 1.2fr 1.8fr 4fr; 
+            grid-template-columns: 1fr 1.2fr; /* 左右分栏 */
+            grid-template-rows: 1.2fr 1.8fr 4fr; /* 上中下比例 */
             gap: 20px 40px;
             padding: 20px 0;
             max-width: 1000px; margin: 0 auto; width: 100%;
+            visibility: hidden; /* 初始隐藏，数据加载后再显示 */
         }
 
-        .left-top-name {
+        /* --- 第一层：卦名印章 & 大象描述 --- */
+        .box-gua-name {
             display: flex; align-items: center; justify-content: flex-start;
             background-image: url('./images/卦名背景.png');
             background-size: contain; background-repeat: no-repeat; background-position: left center;
-            font-size: clamp(45px, 12vw, 80px); font-weight: 600; padding-left: 10px;
+            font-size: clamp(40px, 11vw, 75px); font-weight: 600; padding-left: 10px;
         }
 
-        .right-top-xiang { display: flex; align-items: center; gap: 15px; }
-        .img-xiang-icon {
+        .box-daxiang { display: flex; align-items: center; gap: 15px; }
+        .img-dx-icon {
             width: 60px; height: 60px; flex: 0 0 60px;
             background-image: url('./images/大象.png'); background-size: contain; background-repeat: no-repeat;
         }
-        .xiang-text-box { font-size: clamp(15px, 3.8vw, 19px); line-height: 1.4; font-weight: 600; }
-        .xiang-text-box b { display: block; font-weight: 500; font-size: 0.9em; color: var(--ink-soft); margin-top: 4px; }
+        .dx-text-wrap { font-size: clamp(14px, 3.6vw, 18px); line-height: 1.45; font-weight: 600; }
+        .dx-text-wrap b { display: block; font-weight: 500; font-size: 0.9em; color: var(--ink-soft); margin-top: 4px; }
 
-        .left-mid-guaci {
+        /* --- 第二层：卦辞 & 彖传背景块 --- */
+        .box-guaci {
             display: flex; align-items: center;
-            font-size: clamp(22px, 5.5vw, 30px); line-height: 1.5; font-weight: 600;
+            font-size: clamp(20px, 5vw, 28px); line-height: 1.5; font-weight: 600;
+            padding-right: 15px;
         }
 
-        .right-mid-tuan {
+        .box-tuan {
             background-image: url('./images/彖传背景.png'); background-size: cover;
-            border-radius: 8px; padding: 18px; display: flex; flex-direction: column; justify-content: center;
+            border-radius: var(--radius-md); padding: 18px; 
+            display: flex; flex-direction: column; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
         }
-        .tuan-inner { font-size: clamp(13px, 3.2vw, 16px); line-height: 1.6; text-align: justify; }
+        .tuan-inner { font-size: clamp(12px, 3.1vw, 15px); line-height: 1.6; text-align: justify; }
 
-        .bottom-full-area {
+        /* --- 第三层：六爻区域（左右对齐） --- */
+        .area-bottom {
             grid-column: 1 / 3; display: flex; flex-direction: column; justify-content: space-between;
+            padding-top: 10px;
         }
         .yao-row {
             display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center;
-            padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.06);
+            padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
-        .line-box { height: clamp(28px, 5.5vh, 40px); width: 100%; display: flex; gap: 12px; cursor: pointer; }
+        .yao-bar { height: clamp(26px, 5vh, 38px); width: 100%; display: flex; gap: 12px; cursor: pointer; }
         .seg { height: 100%; }
-        .line-box.yang .seg { flex: 1; background: #1a1a1a; border-radius: 2px; }
-        .line-box.yin .seg { flex: 1; background: #999; border-radius: 20px; }
-        .line-box.yin .gap { flex: 0 0 20px; }
+        .yao-bar.yang .seg { flex: 1; background: #1a1a1a; border-radius: 2px; }
+        .yao-bar.yin .seg { flex: 1; background: #999; border-radius: 20px; }
+        .yao-bar.yin .gap { flex: 0 0 20px; }
 
-        .text-box { font-size: clamp(13px, 3.4vw, 16px); line-height: 1.4; font-weight: 600; }
-        .text-box i { display: block; font-style: normal; font-size: 0.85em; font-weight: 400; color: var(--ink-soft); margin-top: 3px; }
+        .yao-text { font-size: clamp(12px, 3.3vw, 15px); line-height: 1.4; font-weight: 600; }
+        .yao-text i { display: block; font-style: normal; font-size: 0.85em; font-weight: 400; color: var(--ink-soft); margin-top: 2px; }
 
-        .yj-footer { position: absolute; bottom: 8px; width: 100%; text-align: center; font-size: 10px; opacity: 0.4; }
+        /* 状态提示 */
+        #loading-tip {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            font-size: 18px; color: var(--ink-soft); letter-spacing: 2px;
+        }
 
         @media (max-width: 500px) {
-            .yj-main-layout { gap: 10px 20px; }
+            .yj-master-layout { gap: 10px 20px; }
             .yao-row { gap: 20px; }
+            .img-dx-icon { width: 50px; height: 50px; flex: 0 0 50px; }
         }
     </style>
 </head>
 <body>
 
-<div class="yj-main-layout" id="mainLayout" style="visibility: hidden;">
-    <div class="left-top-name" id="yjGuaName"></div>
-    <div class="right-top-xiang">
-        <div class="img-xiang-icon"></div>
-        <div class="xiang-text-box" id="yjDaxiang"></div>
+<div id="loading-tip">正在载入经文...</div>
+
+<div class="yj-master-layout" id="app">
+    <!-- 第一层：名 & 象 -->
+    <div class="box-gua-name" id="uiGuaName"></div>
+    <div class="box-daxiang">
+        <div class="img-dx-icon"></div>
+        <div class="dx-text-wrap" id="uiDaxiang"></div>
     </div>
 
-    <div class="left-mid-guaci" id="yjGuaci"></div>
-    <div class="right-mid-tuan">
-        <div class="tuan-inner" id="yjTuan"></div>
+    <!-- 第二层：辞 & 彖 -->
+    <div class="box-guaci" id="uiGuaci"></div>
+    <div class="box-tuan">
+        <div class="tuan-inner" id="uiTuan"></div>
     </div>
 
-    <div class="bottom-full-area" id="yjMainContent"></div>
+    <!-- 第三层：六爻 -->
+    <div class="area-bottom" id="uiYaoBox"></div>
 </div>
 
-<div id="loading" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-size:20px;">加载中...</div>
-
 <script>
-    let state = [1,0,1,0,0,1]; 
+    // 初始卦象状态：噬嗑
+    let state = [1, 0, 1, 0, 0, 1];
 
+    /**
+     * 核心渲染函数
+     */
     function render() {
-        // 1. 核心检查：GUA 对象是否存在
-        if (typeof GUA === 'undefined') {
-            console.error("GUA data not found!");
-            return;
-        }
+        // 安全检查：确保 GUA 对象已从 data_simple.js 加载
+        if (typeof GUA === 'undefined') return;
 
-        const k = state.join('');
-        const g = GUA[k];
-        if (!g) return;
+        const key = state.join('');
+        const data = GUA[key];
+        if (!data) return;
 
-        // 显示界面，隐藏加载提示
-        document.getElementById('mainLayout').style.visibility = 'visible';
-        document.getElementById('loading').style.display = 'none';
+        // 界面显示切换
+        document.getElementById('loading-tip').style.display = 'none';
+        document.getElementById('app').style.visibility = 'visible';
 
-        document.getElementById('yjGuaName').innerText = g.name;
-        document.getElementById('yjGuaci').innerText = g.guaci;
-        document.getElementById('yjTuan').innerText = g.tuan;
-        
-        // 2. 大象传手动分行逻辑：找到第一个句号
-        const fullDx = g.daxiang || "";
-        const firstDotIndex = fullDx.indexOf('。');
-        if (firstDotIndex !== -1) {
-            const part1 = fullDx.substring(0, firstDotIndex + 1);
-            const part2 = fullDx.substring(firstDotIndex + 1);
-            document.getElementById('yjDaxiang').innerHTML = part1 + "<br><b>" + part2 + "</b>";
+        // 填充基本文字
+        document.getElementById('uiGuaName').innerText = data.name;
+        document.getElementById('uiGuaci').innerText = data.guaci;
+        document.getElementById('uiTuan').innerText = data.tuan;
+
+        // 大象传自动分行逻辑：识别第一个句号
+        const dxRaw = data.daxiang || "";
+        const dotPos = dxRaw.indexOf('。');
+        if (dotPos !== -1) {
+            const line1 = dxRaw.substring(0, dotPos + 1);
+            const line2 = dxRaw.substring(dotPos + 1);
+            document.getElementById('uiDaxiang').innerHTML = line1 + "<br><b>" + line2 + "</b>";
         } else {
-            document.getElementById('yjDaxiang').innerText = fullDx;
+            document.getElementById('uiDaxiang').innerText = dxRaw;
         }
-        
-        const mainBox = document.getElementById('yjMainContent');
-        mainBox.innerHTML = '';
-        
-        // 3. 渲染六爻
+
+        // 渲染六爻列表
+        const yaoContainer = document.getElementById('uiYaoBox');
+        yaoContainer.innerHTML = '';
+
         state.forEach((s, i) => {
             const row = document.createElement('div');
             row.className = 'yao-row';
-            
-            const l = document.createElement('div');
-            l.className = 'line-box ' + (s ? 'yang' : 'yin');
-            l.innerHTML = s ? '<div class="seg"></div>' : '<div class="seg"></div><div class="gap"></div><div class="seg"></div>';
-            l.onclick = () => { state[i] = state[i] ? 0 : 1; render(); };
-            
-            const textWrap = document.createElement('div');
-            textWrap.className = 'text-box';
-            
-            // 爻辞容错处理
-            const yaoData = g.yao && g.yao[i] ? g.yao[i] : ["", ""];
-            textWrap.innerHTML = yaoData[0] + "<i>象曰：" + yaoData[1] + "</i>";
-            
-            row.appendChild(l);
-            row.appendChild(textWrap);
-            mainBox.appendChild(row);
+
+            // 爻条部分
+            const bar = document.createElement('div');
+            bar.className = 'yao-bar ' + (s ? 'yang' : 'yin');
+            bar.innerHTML = s ? '<div class="seg"></div>' : '<div class="seg"></div><div class="gap"></div><div class="seg"></div>';
+            bar.onclick = () => {
+                state[i] = state[i] ? 0 : 1;
+                render();
+            };
+
+            // 爻辞部分
+            const text = document.createElement('div');
+            text.className = 'yao-text';
+            const yData = (data.yao && data.yao[i]) ? data.yao[i] : ["", ""];
+            text.innerHTML = yData[0] + "<i>象曰：" + yData[1] + "</i>";
+
+            row.appendChild(bar);
+            row.appendChild(text);
+            yaoContainer.appendChild(row);
         });
     }
 
-    // 4. 终极轮询加载逻辑
+    /**
+     * 初始化：循环检查数据是否就绪
+     */
     function init() {
-        let attempts = 0;
-        const timer = setInterval(() => {
+        const checkInterval = setInterval(() => {
             if (typeof GUA !== 'undefined') {
-                clearInterval(timer);
+                clearInterval(checkInterval);
                 render();
-            } else {
-                attempts++;
-                if (attempts > 30) { // 15秒后提示错误
-                    clearInterval(timer);
-                    document.getElementById('loading').innerText = "数据加载失败，请检查 data_simple.js 文件内容是否正确。";
-                }
             }
-        }, 500);
+        }, 300);
+
+        // 10秒超时处理
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            if (typeof GUA === 'undefined') {
+                document.getElementById('loading-tip').innerHTML = "数据加载失败<br><small>请检查 data_simple.js 是否在同级目录且内容正确</small>";
+            }
+        }, 10000);
     }
 
+    // 启动
     window.onload = init;
 </script>
 </body>

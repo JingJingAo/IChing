@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>易经六十四卦 · 3:4 黄金版</title>
-    <!-- 引用你重命名的简体数据库 -->
+    <title>易经六十四卦 · 比例复刻版</title>
     <script src="./data simple.js"></script>
     
     <style>
-        /* 字体引入 */
         @font-face { 
             font-family: 'MiLanting'; 
             src: url('./fonts/MI_LanTing_Regular.ttf') format('truetype'); 
@@ -18,154 +16,132 @@
         :root {
             --ink: #1a1a1a;
             --ink-soft: #444;
-            --radius-md: 12px;
         }
 
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent;
-            font-family: 'MiLanting', sans-serif !important; 
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'MiLanting', sans-serif !important; }
         
         html, body { 
-            height: 100%; width: 100%; overflow: hidden; 
-            margin: 0; padding: 0; background-color: #f4f4f2;
+            height: 100%; width: 100%; overflow: hidden; margin: 0; padding: 0; 
+            background-image: url('./images/界面背景.png');
+            background-size: cover; background-position: center;
         }
         
         body { 
-            display: flex; align-items: center; justify-content: center;
-            background-image: url('./images/界面背景.png');
-            background-size: cover; background-position: center;
-            padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom);
+            display: flex; flex-direction: column;
+            padding: env(safe-area-inset-top) 5% env(safe-area-inset-bottom);
         }
 
-        /* 主容器：强制 3:4 比例 */
-        .yj-master-card {
-            width: 100%;
-            max-width: 500px; /* 手机端主流宽度 */
-            aspect-ratio: 3 / 4; 
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(8px);
-            display: grid;
-            grid-template-rows: 1.2fr 1.5fr 4fr; /* 上中下三层比例 */
-            gap: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+        /* 主容器：撑满屏幕但保持图片布局比例 */
+        .yj-main-layout {
+            flex: 1; display: grid;
+            grid-template-columns: 0.9fr 1.1fr; /* 左右比例微调 */
+            grid-template-rows: 1.2fr 1.8fr 4fr; /* 上中下比例 */
+            gap: 20px 40px;
+            padding: 20px 0;
+            max-width: 1000px; margin: 0 auto; width: 100%;
         }
 
-        /* 通用对半分栅格 */
-        .yj-grid-half {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch;
+        /* --- 左侧模块 --- */
+        /* 卦名：直接贴在背景图上 */
+        .left-top-name {
+            display: flex; align-items: center; justify-content: flex-start;
+            background-image: url('./images/卦名背景.png');
+            background-size: contain; background-repeat: no-repeat; background-position: left center;
+            font-size: clamp(40px, 10vw, 70px); font-weight: 600; padding-left: 10px;
         }
 
-        /* 第一层：卦名 & 大象 */
-        .yj-seal-box { display: flex; align-items: center; gap: 12px; }
-        .yj-img-seal {
-            width: 50px; height: 50px; flex: 0 0 50px; background-size: cover;
-        }
-        .img-gua { background-image: url('./images/卦名背景.png'); border-radius: 50%; }
-        .img-xiang { background-image: url('./images/大象.png'); }
-        
-        .title-text { font-size: clamp(24px, 6vw, 32px); font-weight: 600; line-height: 1; }
-        .sub-text { font-size: 11px; color: var(--ink-soft); margin-top: 4px; letter-spacing: 1px; }
-        
-        .xiang-text { font-size: clamp(14px, 3.5vw, 16px); line-height: 1.4; font-weight: 600; }
-        .xiang-text b { display: block; font-weight: 400; font-size: 0.85em; margin-top: 2px; color: var(--ink-soft); }
-
-        /* 第二层：卦辞 & 彖传 */
-        .yj-guaci-box {
-            font-size: clamp(18px, 4.5vw, 22px); line-height: 1.4; font-weight: 600;
-            padding-left: 15px; border-left: 5px solid var(--ink);
+        /* 卦辞：居中对齐 */
+        .left-mid-guaci {
             display: flex; align-items: center;
+            font-size: clamp(20px, 5vw, 28px); line-height: 1.5; font-weight: 600;
+            padding-right: 20px;
         }
-        .yj-tuan-box {
+
+        /* --- 右侧模块 --- */
+        /* 大象传：图左文右，文字分两行 */
+        .right-top-xiang {
+            display: flex; align-items: center; gap: 15px;
+        }
+        .img-xiang-icon {
+            width: 60px; height: 60px; flex: 0 0 60px;
+            background-image: url('./images/大象.png'); background-size: contain; background-repeat: no-repeat;
+        }
+        .xiang-text-box { font-size: clamp(14px, 3.5vw, 18px); line-height: 1.4; font-weight: 600; }
+        .xiang-text-box b { display: block; font-weight: 500; font-size: 0.9em; color: var(--ink-soft); margin-top: 4px; }
+
+        /* 彖传：渐变背景块 */
+        .right-mid-tuan {
             background-image: url('./images/彖传背景.png'); background-size: cover;
-            border-radius: var(--radius-md); padding: 12px;
-            display: flex; flex-direction: column; justify-content: center;
+            border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        .tuan-content { font-size: clamp(12px, 3vw, 14px); line-height: 1.5; text-align: justify; }
+        .tuan-inner { font-size: clamp(12px, 3vw, 15px); line-height: 1.6; text-align: justify; }
 
-        /* 第三层：六爻区域（占版面最大部分） */
-        .yj-lines-container {
-            display: flex; flex-direction: column; justify-content: space-between;
-            min-height: 0; /* 允许内部滚动或压缩 */
+        /* --- 底部六爻区域：左右严格对齐 --- */
+        .bottom-full-area {
+            grid-column: 1 / 3; display: flex; flex-direction: column; justify-content: space-between;
         }
-        .yj-yao-row {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center;
-            padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .yj-line { height: 28px; width: 90%; display: flex; gap: 8px; cursor: pointer; margin: 0 auto; }
-        .yj-seg { height: 100%; box-shadow: inset 0 1px 2px rgba(255,255,255,0.2); }
-        .yj-line.yang .yj-seg { flex: 1; background: #1a1a1a; border-radius: 2px; }
-        .yj-line.yin .yj-seg { flex: 1; background: #888; border-radius: 15px; }
-        .yj-line.yin .yj-gap { flex: 0 0 15px; }
-
-        .yao-text { font-size: clamp(12px, 3.2vw, 14px); line-height: 1.3; font-weight: 600; }
-        .yao-text i { display: block; font-style: normal; font-size: 0.85em; font-weight: 400; color: var(--ink-soft); margin-top: 2px; }
-
-        .yj-footer { 
-            position: absolute; bottom: 10px; width: 100%; text-align: center; 
-            font-size: 10px; color: var(--ink-soft); opacity: 0.5; letter-spacing: 2px;
+        .yao-row {
+            display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 40px; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
-        /* 针对极窄屏幕的微调 */
-        @media (max-height: 600px) {
-            .yj-master-card { aspect-ratio: auto; height: 95vh; }
+        /* 爻条样式 */
+        .line-box { height: clamp(24px, 5vh, 36px); width: 100%; display: flex; gap: 10px; cursor: pointer; }
+        .seg { height: 100%; transition: all 0.2s; }
+        .line-box.yang .seg { flex: 1; background: #1a1a1a; border-radius: 2px; }
+        .line-box.yin .seg { flex: 1; background: #999; border-radius: 20px; }
+        .line-box.yin .gap { flex: 0 0 20px; }
+
+        /* 爻辞样式 */
+        .text-box { font-size: clamp(12px, 3.2vw, 15px); line-height: 1.35; font-weight: 600; }
+        .text-box i { display: block; font-style: normal; font-size: 0.85em; font-weight: 400; color: var(--ink-soft); margin-top: 2px; }
+
+        .yj-footer { position: absolute; bottom: 5px; width: 100%; text-align: center; font-size: 9px; opacity: 0.4; letter-spacing: 2px; }
+
+        /* 手机端适配：保持比例，缩小间距 */
+        @media (max-width: 500px) {
+            .yj-main-layout { gap: 10px 20px; }
+            .yao-row { gap: 20px; }
+            .img-xiang-icon { width: 45px; height: 45px; flex: 0 0 45px; }
         }
     </style>
 </head>
 <body>
 
-<div class="yj-master-card">
-    <!-- 上：名象 -->
-    <div class="yj-grid-half">
-        <div class="yj-seal-box">
-            <div class="yj-img-seal img-gua"></div>
-            <div>
-                <div class="title-text" id="yjGuaName"></div>
-                <div class="sub-text">周易六十四卦</div>
-            </div>
-        </div>
-        <div class="yj-seal-box">
-            <div class="yj-img-seal img-xiang"></div>
-            <div class="xiang-text" id="yjDaxiang"></div>
-        </div>
+<div class="yj-main-layout">
+    <!-- 第一层 -->
+    <div class="left-top-name" id="yjGuaName"></div>
+    <div class="right-top-xiang">
+        <div class="img-xiang-icon"></div>
+        <div class="xiang-text-box" id="yjDaxiang"></div>
     </div>
 
-    <!-- 中：辞彖 -->
-    <div class="yj-grid-half">
-        <div class="yj-guaci-box" id="yjGuaci"></div>
-        <div class="yj-tuan-box">
-            <div class="tuan-content" id="yjTuan"></div>
-        </div>
+    <!-- 第二层 -->
+    <div class="left-mid-guaci" id="yjGuaci"></div>
+    <div class="right-mid-tuan">
+        <div class="tuan-inner" id="yjTuan"></div>
     </div>
 
-    <!-- 下：六爻 -->
-    <div id="yjMainContent" class="yj-lines-container"></div>
+    <!-- 第三层：六爻 -->
+    <div class="bottom-full-area" id="yjMainContent"></div>
 </div>
 
-<div class="yj-footer">点击六爻 · 阴阳交替</div>
+<div class="yj-footer">点击爻条 · 体验阴阳变化</div>
 
 <script>
-    // 默认起始卦（噬嗑 101001）
     let state = [1,0,1,0,0,1]; 
 
     function render() {
         const k = state.join('');
-        // 检查 data simple.js 是否加载成功
-        if (typeof GUA === 'undefined' || !GUA[k]) {
-            console.error("未找到卦象数据，请检查 data simple.js 是否正确上传");
-            return;
-        }
+        if (typeof GUA === 'undefined' || !GUA[k]) return;
         const g = GUA[k];
 
         document.getElementById('yjGuaName').innerText = g.name;
         document.getElementById('yjGuaci').innerText = g.guaci;
         document.getElementById('yjTuan').innerText = g.tuan;
         
-        // 大象传修复：严格拆分两句并分行
+        // 大象传：严格分两行
         const dxParts = g.daxiang.split(/[。！？]/).filter(p => p.trim() !== '');
         if (dxParts.length >= 2) {
             document.getElementById('yjDaxiang').innerHTML = `${dxParts[0]}。<br><b>${dxParts[1]}。</b>`;
@@ -176,26 +152,24 @@
         const mainBox = document.getElementById('yjMainContent');
         mainBox.innerHTML = '';
         
-        // 渲染六爻：从上爻到初爻
+        // 渲染六爻
         state.forEach((s, i) => {
             const row = document.createElement('div');
-            row.className = 'yj-yao-row';
+            row.className = 'yao-row';
             
             // 左：爻条
-            const barWrap = document.createElement('div');
             const l = document.createElement('div');
-            l.className = 'yj-line ' + (s ? 'yang' : 'yin');
-            l.innerHTML = s ? '<div class="yj-seg"></div>' : '<div class="yj-seg"></div><div class="yj-gap"></div><div class="yj-seg"></div>';
+            l.className = 'line-box ' + (s ? 'yang' : 'yin');
+            l.innerHTML = s ? '<div class="seg"></div>' : '<div class="seg"></div><div class="gap"></div><div class="seg"></div>';
             l.onclick = () => { state[i] = state[i] ? 0 : 1; render(); };
-            barWrap.appendChild(l);
             
             // 右：爻辞
             const textWrap = document.createElement('div');
-            textWrap.className = 'yao-text';
-            const yaoData = g.yao[i]; // [爻辞, 小象]
+            textWrap.className = 'text-box';
+            const yaoData = g.yao[i];
             textWrap.innerHTML = `${yaoData[0]}<i>象曰：${yaoData[1]}</i>`;
             
-            row.appendChild(barWrap);
+            row.appendChild(l);
             row.appendChild(textWrap);
             mainBox.appendChild(row);
         });

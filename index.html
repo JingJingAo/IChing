@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>易经六十四卦 · 交互版</title>
+    <!-- 引入外部数据文件 -->
+    <script src="./data.js"></script>
+    <!-- 引入简繁转换库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chinese-s2t@1.0.0/dist/chinese-s2t.min.js"></script>
+    
+    <style>
+        /* 1. 定义本地字体资源 */
+        @font-face {
+            font-family: 'QijiCustom';
+            src: url('./fonts/qiji-combo.ttf') format('truetype');
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'MiLanting';
+            src: url('./fonts/MI_LanTing_Regular.ttf') format('truetype');
+            font-display: swap;
+        }
+
+        :root {
+            --bg-paper: #eceae4; --ink: #2a2a2a; --ink-soft: #4a4a4a;
+            --radius-md: 10px; --radius-pill: 20px;
+        }
+        * { box-sizing: border-box; }
+        body { background: var(--bg-paper); margin: 0; padding: 20px 10px; transition: font-family 0.2s; }
+
+        /* 2. 强制字体切换逻辑 (使用 !important 确保覆盖) */
+        /* 繁体状态：使用黄令东齐伋复刻体 */
+        body.lang-tc, body.lang-tc * { 
+            font-family: "QijiCustom", "Microsoft JhengHei", serif !important; 
+        }
+        /* 简体状态：使用小米兰亭 */
+        body.lang-sc, body.lang-sc * { 
+            font-family: "MiLanting", "Microsoft YaHei", sans-serif !important; 
+        }
+
+        /* 简繁切换按钮 */
+        .lang-switch { position: fixed; top: 15px; right: 15px; z-index: 100; display: flex; gap: 8px; }
+        .lang-btn {
+            padding: 6px 16px; border: 1px solid var(--ink); border-radius: 20px;
+            background: rgba(255,255,255,0.7); font-size: 13px; cursor: pointer;
+            transition: all 0.2s; font-family: sans-serif !important; /* 按钮用系统黑体防止加载慢看不见字 */
+        }
+        .lang-btn.active { background: var(--ink); color: var(--bg-paper); }
+
+        /* 布局容器 */
+        .yj-paper {
+            background: var(--bg-paper);
+            background-image: radial-gradient(rgba(0,0,0,.018) 1px,transparent 1px);
+            background-size: 4px 4px;
+            max-width: 850px; margin: 0 auto;
+            border-radius: 18px; border: .5px solid rgba(0,0,0,.1);
+            padding: 30px; min-height: 650px; box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+        }
+        .yj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 40px; align-items: stretch; }
+        .yj-cell { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+
+        /* 图像与装饰 */
+        .yj-name-cell { display: flex; align-items: center; gap: 16px; }
+        .yj-seal {
+            width: 70px; height: 70px; flex: 0 0 70px; border-radius: 50%;
+            background-image: url('https://r.jina.ai/i/06f753c9e6574f878f9f0910077c5938');
+            background-size: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+        .yj-gua-name { font-size: 44px; font-weight: 600; letter-spacing: 2px; line-height: 1; }
+        .yj-gua-no { font-size: 14px; color: var(--ink-soft); margin-top: 8px; }
+
+        .yj-daxiang-box { display: flex; align-items: center; gap: 15px; }
+        .yj-seal-sm {
+            width: 46px; height: 46px; flex: 0 0 46px;
+            background-image: url('https://r.jina.ai/i/6c857700a06a461c9441f71a7d65070e');
+            background-size: cover; border: 1px solid rgba(0,0,0,0.08);
+        }
+        .yj-daxiang { font-size: 19px; line-height: 1.5; font-weight: 500; }
+        .yj-daxiang b { display: block; font-weight: 500; margin-top: 4px; }
+
+        .yj-guaci { font-size: 26px; line-height: 1.6; font-weight: 500; padding-left: 15px; border-left: 5px solid var(--ink); }
+
+        .yj-tuan-panel {
+            background-image: url('https://r.jina.ai/i/28f62c5b369c45ef880562e154627197');
+            background-size: cover; border-radius: var(--radius-md); padding: 22px;
+            display: flex; flex-direction: column; justify-content: center; position: relative;
+        }
+        .yj-tuan-head-img {
+            width: 36px; height: 36px;
+            background-image: url('https://r.jina.ai/i/103a8915442f49df9c40333d6ea9a75d');
+            background-size: contain; background-repeat: no-repeat; margin-bottom: 15px;
+        }
+        .yj-tuan { font-size: 15px; line-height: 1.8; text-align: justify; }
+
+        /* 六爻 */
+        .yj-lines { display: flex; flex-direction: column; gap: 16px; }
+        .yj-line { height: 44px; display: flex; gap: 16px; cursor: pointer; }
+        .yj-seg { height: 100%; box-shadow: inset 0 1px 2px rgba(255,255,255,0.3), 0 1px 4px rgba(0,0,0,0.15); }
+        .yj-line.yang .yj-seg { flex: 1; background: #222; border-radius: 2px; }
+        .yj-line.yin .yj-seg { flex: 1; background: #b0b0b0; border-radius: var(--radius-pill); }
+        .yj-line.yin .yj-gap { flex: 0 0 28px; }
+
+        .yj-yaolist { display: flex; flex-direction: column; gap: 14px; }
+        .yj-yaoci {
+            font-size: 15px; line-height: 1.5; font-weight: 500; min-height: 44px;
+            display: flex; flex-direction: column; justify-content: center;
+            border-bottom: 1px solid rgba(0,0,0,0.04); padding-bottom: 6px;
+        }
+        .yj-yaoci .sm { display: block; font-size: 12px; color: var(--ink-soft); margin-top: 4px; opacity: 0.8; }
+
+        @media (max-width: 768px) {
+            .yj-grid { grid-template-columns: 1fr; gap: 35px; }
+        }
+    </style>
+</head>
+<body class="lang-tc">
+
+<div class="lang-switch">
+    <button class="lang-btn active" id="btnTC" onclick="setLang('tc')">繁體</button>
+    <button class="lang-btn" id="btnSC" onclick="setLang('sc')">简体</button>
+</div>
+
+<div class="yj-paper">
+    <div class="yj-grid">
+        <div class="yj-cell">
+            <div class="yj-name-cell">
+                <div class="yj-seal"></div>
+                <div><div class="yj-gua-name" id="yjGuaName"></div><div class="yj-gua-no" id="yjGuaNo"></div></div>
+            </div>
+        </div>
+        <div class="yj-cell">
+            <div class="yj-daxiang-box">
+                <div class="yj-seal-sm"></div><div class="yj-daxiang" id="yjDaxiang"></div>
+            </div>
+        </div>
+        <div class="yj-cell"><div class="yj-guaci" id="yjGuaci"></div></div>
+        <div class="yj-cell">
+            <div class="yj-tuan-panel">
+                <div class="yj-tuan-head-img"></div><div class="yj-tuan" id="yjTuan"></div>
+            </div>
+        </div>
+        <div class="yj-cell"><div class="yj-lines" id="yjLines"></div></div>
+        <div class="yj-cell"><div class="yj-yaolist" id="yjYaoList"></div></div>
+    </div>
+</div>
+
+<script>
+    let state = [1,0,1,0,0,1]; // 初始噬嗑
+    let currentLang = 'tc'; 
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.body.className = 'lang-' + lang;
+        document.getElementById('btnTC').classList.toggle('active', lang === 'tc');
+        document.getElementById('btnSC').classList.toggle('active', lang === 'sc');
+        render();
+    }
+
+    function translate(text) {
+        if (currentLang === 'sc' && window.ChineseS2T) return ChineseS2T.t2s(text);
+        return text;
+    }
+
+    function render() {
+        const k = state.join('');
+        if (typeof GUA === 'undefined' || !GUA[k]) return;
+        const g = GUA[k];
+
+        document.getElementById('yjGuaName').innerText = translate(g.name);
+        document.getElementById('yjGuaNo').innerText = translate(`第 ${g.n} 卦 · ${g.full}`);
+        document.getElementById('yjGuaci').innerText = translate(g.guaci);
+        document.getElementById('yjDaxiang').innerHTML = translate(g.daxiang) + `<b>${translate(g.daxiang2)}</b>`;
+        document.getElementById('yjTuan').innerText = translate(g.tuan);
+        
+        const linesBox = document.getElementById('yjLines');
+        linesBox.innerHTML = '';
+        state.forEach((s, i) => {
+            const l = document.createElement('div');
+            l.className = 'yj-line ' + (s ? 'yang' : 'yin');
+            l.innerHTML = s ? '<div class="yj-seg"></div>' : '<div class="yj-seg"></div><div class="yj-gap"></div><div class="yj-seg"></div>';
+            l.onclick = () => { state[i] = state[i] ? 0 : 1; render(); };
+            linesBox.appendChild(l);
+        });
+
+        const yaoBox = document.getElementById('yjYaoList');
+        yaoBox.innerHTML = '';
+        g.yao.forEach(y => {
+            const yr = document.createElement('div');
+            yr.className = 'yj-yaoci';
+            yr.innerHTML = translate(y[0]) + `<span class="sm">象曰：${translate(y[1])}</span>`;
+            yaoBox.appendChild(yr);
+        });
+    }
+
+    window.onload = () => { setTimeout(render, 300); };
+</script>
+</body>
+</html>

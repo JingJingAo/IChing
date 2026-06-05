@@ -6,7 +6,7 @@
     <title>易经六十四卦 · 比例复刻版</title>
     
     <script>
-        document.write('<script src="./data_simple.js?t=' + new Date().getTime() + '" onload="startEngine()"><\/script>');
+        document.write('<script src="./data_simple.js?t=' + new Date().getTime() + '"><\/script>');
     </script>
     
     <style>
@@ -44,7 +44,7 @@
         .grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr; /* 左三块，右三块，各占一半 */
-            grid-template-rows: 1.1fr 1.3fr 3.6fr; /* 完美还原原始布局的三层高度比例 */
+            grid-template-rows: 1.1fr 1.3fr 3.6fr; /* 严格对齐三层高度比例 */
             gap: 10px;
             width: 100%;
             height: 100%;
@@ -295,12 +295,15 @@
 
         // 核心渲染引擎
         function render() {
-            // 兼容可能存在的挂载形式
+            // 安全多重兜底检测变量，彻底解决变量挂载滞后问题
             const data = window.IChingData || window.GUA || {};
             
             // 铁律拼装：自左向右（初爻在左，上爻在右）合并成二进制Key去 data_simple.js 匹配
             const currentKey = [...state].join('');
-            const currentGua = data[currentKey] || { name: "未知卦", guaci: "", tuan: "", daxiang: "", yao: [] };
+            const currentGua = data[currentKey];
+            
+            // 如果数据还没完全解析出来，不渲染任何空白，等待下一个周期
+            if (!currentGua) return;
 
             // 1. 渲染左上：卦名自适应
             const nameContainer = document.getElementById('ui-name-container');
@@ -371,10 +374,14 @@
             });
         }
 
-        // 数据文件加载完成后的唯一指定入口函数
-        function startEngine() {
-            render();
-        }
+        // 使用最高兼容性、防阻塞的高频轮询检查，一旦发现数据加载成功立刻启动渲染并锁死计时器
+        const dataChecker = setInterval(() => {
+            const checkData = window.IChingData || window.GUA;
+            if (checkData && Object.keys(checkData).length > 0) {
+                clearInterval(dataChecker);
+                render();
+            }
+        }, 100);
     </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-window.GUA = {
+window.IChingData = {
   "111111": {
     "name": "乾",
     "guaci": "元，亨，利，贞。",

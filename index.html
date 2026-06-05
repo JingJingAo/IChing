@@ -2,112 +2,110 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>易经六十四卦 · 交互版</title>
-    <!-- 引入外部数据与转换库 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>易经六十四卦 · 交互全息版</title>
     <script src="./data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chinese-s2t@1.0.0/dist/chinese-s2t.min.js"></script>
     
     <style>
-        /* 1. 本地字体定义 */
-        @font-face {
-            font-family: 'QijiCustom';
-            src: url('./fonts/qiji-combo.ttf') format('truetype');
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'MiLanting';
-            src: url('./fonts/MI_LanTing_Regular.ttf') format('truetype');
-            font-display: swap;
-        }
+        @font-face { font-family: 'QijiCustom'; src: url('./fonts/qiji-combo.ttf') format('truetype'); font-display: swap; }
+        @font-face { font-family: 'MiLanting'; src: url('./fonts/MI_LanTing_Regular.ttf') format('truetype'); font-display: swap; }
 
         :root {
             --bg-paper: #eceae4; --ink: #2a2a2a; --ink-soft: #4a4a4a;
             --radius-md: 10px; --radius-pill: 20px;
         }
         * { box-sizing: border-box; }
-        body { background: var(--bg-paper); margin: 0; padding: 20px 10px; transition: font-family 0.2s; }
-
-        /* 2. 简繁切换字体强制规则 */
+        html, body { height: 100%; overflow: hidden; background: var(--bg-paper); margin: 0; padding: 0; }
+        
+        body { display: flex; align-items: center; justify-content: center; }
         body.lang-tc, body.lang-tc * { font-family: "QijiCustom", serif !important; }
         body.lang-sc, body.lang-sc * { font-family: "MiLanting", sans-serif !important; }
 
-        /* 3. 布局与组件 */
-        .lang-switch { position: fixed; top: 15px; right: 15px; z-index: 100; display: flex; gap: 8px; }
+        /* 简繁切换按钮 */
+        .lang-switch { position: fixed; top: 10px; right: 10px; z-index: 100; display: flex; gap: 5px; }
         .lang-btn {
-            padding: 6px 16px; border: 1px solid var(--ink); border-radius: 20px;
-            background: rgba(255,255,255,0.7); font-size: 13px; cursor: pointer;
-            transition: all 0.2s; font-family: sans-serif !important;
+            padding: 4px 12px; border: 1px solid var(--ink); border-radius: 20px;
+            background: rgba(255,255,255,0.6); font-size: 11px; cursor: pointer;
         }
         .lang-btn.active { background: var(--ink); color: var(--bg-paper); }
 
+        /* 比例适配容器 */
+        .yj-outer {
+            width: 95vw; height: 95vh;
+            max-width: 850px; 
+            display: flex; flex-direction: column;
+            aspect-ratio: 3 / 4; /* 桌面默认 */
+        }
+
         .yj-paper {
-            background: var(--bg-paper);
+            flex: 1; background: var(--bg-paper);
             background-image: radial-gradient(rgba(0,0,0,.018) 1px,transparent 1px);
             background-size: 4px 4px;
-            max-width: 850px; margin: 0 auto;
             border-radius: 18px; border: .5px solid rgba(0,0,0,.1);
-            padding: 30px; min-height: 650px; box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+            padding: 20px; display: flex; flex-direction: column; gap: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06); overflow: hidden;
         }
-        .yj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 40px; align-items: stretch; }
-        .yj-cell { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
 
-        /* 4. 图片位置修改点 */
-        /* 卦名背景：圆形太极图 */
+        .yj-grid-top { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
+        
+        /* 卦名与印章 */
+        .yj-name-cell { display: flex; align-items: center; gap: 12px; }
         .yj-seal {
-            width: 70px; height: 70px; flex: 0 0 70px; border-radius: 50%;
-            background-image: url('./images/卦名背景.png');
-            background-size: cover; background-position: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            width: 60px; height: 60px; flex: 0 0 60px; border-radius: 50%;
+            background-image: url('./images/卦名背景.png'); background-size: cover; background-position: center;
         }
-        .yj-name-cell { display: flex; align-items: center; gap: 16px; }
-        .yj-gua-name { font-size: 44px; font-weight: 600; letter-spacing: 2px; line-height: 1; }
-        .yj-gua-no { font-size: 14px; color: var(--ink-soft); margin-top: 8px; }
+        .yj-gua-name { font-size: 36px; font-weight: 600; line-height: 1; }
+        .yj-gua-no { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
 
-        /* 大象传左侧方图 */
+        /* 大象传 */
+        .yj-daxiang-box { display: flex; align-items: center; gap: 10px; }
         .yj-seal-sm {
-            width: 46px; height: 46px; flex: 0 0 46px;
-            background-image: url('./images/大象.png');
-            background-size: cover; background-position: center;
+            width: 40px; height: 40px; flex: 0 0 40px;
+            background-image: url('./images/大象.png'); background-size: cover;
         }
-        .yj-daxiang-box { display: flex; align-items: center; gap: 15px; }
-        .yj-daxiang { font-size: 19px; line-height: 1.5; font-weight: 500; }
-        .yj-daxiang b { display: block; font-weight: 500; margin-top: 4px; }
+        .yj-daxiang { font-size: 16px; line-height: 1.4; font-weight: 500; }
+        .yj-daxiang b { display: block; margin-top: 2px; }
 
-        .yj-guaci { font-size: 26px; line-height: 1.6; font-weight: 500; padding-left: 15px; border-left: 5px solid var(--ink); }
-
-        /* 彖传背景与上方方图 */
+        /* 卦辞与彖传 */
+        .yj-grid-mid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; min-height: 100px; }
+        .yj-guaci { font-size: 20px; line-height: 1.5; font-weight: 600; padding-left: 12px; border-left: 4px solid var(--ink); display: flex; align-items: center; }
+        
         .yj-tuan-panel {
-            background-image: url('./images/彖传背景.png');
-            background-size: cover; background-position: center;
-            border-radius: var(--radius-md); padding: 22px;
+            background-image: url('./images/彖传背景.png'); background-size: cover; background-position: center;
+            border-radius: var(--radius-md); padding: 15px;
             display: flex; flex-direction: column; justify-content: center; position: relative;
         }
         .yj-tuan-head-img {
-            width: 36px; height: 36px;
-            background-image: url('./images/彖传.png');
-            background-size: contain; background-repeat: no-repeat; margin-bottom: 15px;
+            width: 28px; height: 28px; background-image: url('./images/彖传.png');
+            background-size: contain; background-repeat: no-repeat; margin-bottom: 8px;
         }
-        .yj-tuan { font-size: 15px; line-height: 1.8; text-align: justify; }
+        .yj-tuan { font-size: 13px; line-height: 1.6; text-align: justify; }
 
-        /* 六爻 */
-        .yj-lines { display: flex; flex-direction: column; gap: 16px; }
-        .yj-line { height: 44px; display: flex; gap: 16px; cursor: pointer; }
-        .yj-seg { height: 100%; box-shadow: inset 0 1px 2px rgba(255,255,255,0.3), 0 1px 4px rgba(0,0,0,0.15); }
+        /* 六爻严格对齐区域 */
+        .yj-lines-container { flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 10px 0; }
+        .yj-line-row { display: grid; grid-template-columns: 120px 1fr; gap: 20px; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.03); padding-bottom: 4px; }
+        
+        .yj-line { height: 32px; display: flex; gap: 10px; cursor: pointer; }
+        .yj-seg { height: 100%; box-shadow: inset 0 1px 2px rgba(255,255,255,0.3), 0 1px 3px rgba(0,0,0,0.1); }
         .yj-line.yang .yj-seg { flex: 1; background: #222; border-radius: 2px; }
         .yj-line.yin .yj-seg { flex: 1; background: #b0b0b0; border-radius: var(--radius-pill); }
-        .yj-line.yin .yj-gap { flex: 0 0 28px; }
+        .yj-line.yin .yj-gap { flex: 0 0 20px; }
 
-        .yj-yaolist { display: flex; flex-direction: column; gap: 14px; }
-        .yj-yaoci {
-            font-size: 15px; line-height: 1.5; font-weight: 500; min-height: 44px;
-            display: flex; flex-direction: column; justify-content: center;
-            border-bottom: 1px solid rgba(0,0,0,0.04); padding-bottom: 6px;
-        }
-        .yj-yaoci .sm { display: block; font-size: 12px; color: var(--ink-soft); margin-top: 4px; opacity: 0.8; }
+        .yj-yaoci { font-size: clamp(11px, 2.5vw, 14px); line-height: 1.3; font-weight: 500; color: var(--ink); }
+        .yj-yaoci .sm { display: block; font-size: 0.85em; color: var(--ink-soft); opacity: 0.8; margin-top: 2px; }
 
-        @media (max-width: 768px) {
-            .yj-grid { grid-template-columns: 1fr; gap: 35px; }
+        /* 底部说明 */
+        .yj-footer { text-align: center; font-size: 12px; color: var(--ink-soft); padding: 10px 0; letter-spacing: 2px; opacity: 0.7; }
+
+        /* 手机端 9:16 强制比例 */
+        @media (max-aspect-ratio: 1/1) {
+            .yj-outer { aspect-ratio: 9 / 16; width: 100vw; height: 100vh; }
+            .yj-paper { border-radius: 0; border: none; }
+            .yj-grid-top, .yj-grid-mid { gap: 10px; }
+            .yj-line-row { grid-template-columns: 90px 1fr; gap: 12px; }
+            .yj-gua-name { font-size: 28px; }
+            .yj-guaci { font-size: 17px; }
         }
     </style>
 </head>
@@ -118,32 +116,39 @@
     <button class="lang-btn" id="btnSC" onclick="setLang('sc')">简体</button>
 </div>
 
-<div class="yj-paper">
-    <div class="yj-grid">
-        <div class="yj-cell">
+<div class="yj-outer">
+    <div class="yj-paper">
+        <!-- Row 1: 卦名 & 大象 -->
+        <div class="yj-grid-top">
             <div class="yj-name-cell">
                 <div class="yj-seal"></div>
                 <div><div class="yj-gua-name" id="yjGuaName"></div><div class="yj-gua-no" id="yjGuaNo"></div></div>
             </div>
-        </div>
-        <div class="yj-cell">
             <div class="yj-daxiang-box">
                 <div class="yj-seal-sm"></div><div class="yj-daxiang" id="yjDaxiang"></div>
             </div>
         </div>
-        <div class="yj-cell"><div class="yj-guaci" id="yjGuaci"></div></div>
-        <div class="yj-cell">
+
+        <!-- Row 2: 卦辞 & 彖传 -->
+        <div class="yj-grid-mid">
+            <div class="yj-guaci" id="yjGuaci"></div>
             <div class="yj-tuan-panel">
                 <div class="yj-tuan-head-img"></div><div class="yj-tuan" id="yjTuan"></div>
             </div>
         </div>
-        <div class="yj-cell"><div class="yj-lines" id="yjLines"></div></div>
-        <div class="yj-cell"><div class="yj-yaolist" id="yjYaoList"></div></div>
+
+        <!-- Row 3: 六爻与爻辞严格对齐区 -->
+        <div class="yj-lines-container" id="yjMainContent">
+            <!-- 由 JS 动态生成对齐行 -->
+        </div>
+
+        <!-- 底部说明 -->
+        <div class="yj-footer">点击六爻 · 阴阳变化 · 经文随之</div>
     </div>
 </div>
 
 <script>
-    let state = [1,0,1,0,0,1]; // 初始噬嗑卦
+    let state = [1,0,1,0,0,1]; 
     let currentLang = 'tc'; 
 
     function setLang(lang) {
@@ -170,23 +175,29 @@
         document.getElementById('yjDaxiang').innerHTML = translate(g.daxiang) + `<b>${translate(g.daxiang2)}</b>`;
         document.getElementById('yjTuan').innerText = translate(g.tuan);
         
-        const linesBox = document.getElementById('yjLines');
-        linesBox.innerHTML = '';
+        const mainBox = document.getElementById('yjMainContent');
+        mainBox.innerHTML = '';
+        
+        // 关键修改：按爻位由上至下生成对齐行
         state.forEach((s, i) => {
+            const row = document.createElement('div');
+            row.className = 'yj-line-row';
+            
+            // 爻条部分
             const l = document.createElement('div');
             l.className = 'yj-line ' + (s ? 'yang' : 'yin');
             l.innerHTML = s ? '<div class="yj-seg"></div>' : '<div class="yj-seg"></div><div class="yj-gap"></div><div class="yj-seg"></div>';
             l.onclick = () => { state[i] = state[i] ? 0 : 1; render(); };
-            linesBox.appendChild(l);
-        });
-
-        const yaoBox = document.getElementById('yjYaoList');
-        yaoBox.innerHTML = '';
-        g.yao.forEach(y => {
+            
+            // 爻辞部分
             const yr = document.createElement('div');
             yr.className = 'yj-yaoci';
-            yr.innerHTML = translate(y[0]) + `<span class="sm">象曰：${translate(y[1])}</span>`;
-            yaoBox.appendChild(yr);
+            const yaoData = g.yao[i];
+            yr.innerHTML = translate(yaoData[0]) + `<span class="sm">象曰：${translate(yaoData[1])}</span>`;
+            
+            row.appendChild(l);
+            row.appendChild(yr);
+            mainBox.appendChild(row);
         });
     }
 

@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>易经六十四卦 · 交互版</title>
-    <!-- 引入外部数据文件 -->
+    <!-- 引入外部数据与转换库 -->
     <script src="./data.js"></script>
-    <!-- 引入简繁转换库 -->
     <script src="https://cdn.jsdelivr.net/npm/chinese-s2t@1.0.0/dist/chinese-s2t.min.js"></script>
     
     <style>
-        /* 1. 定义本地字体资源 */
+        /* 1. 本地字体定义 */
         @font-face {
             font-family: 'QijiCustom';
             src: url('./fonts/qiji-combo.ttf') format('truetype');
@@ -29,26 +28,19 @@
         * { box-sizing: border-box; }
         body { background: var(--bg-paper); margin: 0; padding: 20px 10px; transition: font-family 0.2s; }
 
-        /* 2. 强制字体切换逻辑 (使用 !important 确保覆盖) */
-        /* 繁体状态：使用黄令东齐伋复刻体 */
-        body.lang-tc, body.lang-tc * { 
-            font-family: "QijiCustom", "Microsoft JhengHei", serif !important; 
-        }
-        /* 简体状态：使用小米兰亭 */
-        body.lang-sc, body.lang-sc * { 
-            font-family: "MiLanting", "Microsoft YaHei", sans-serif !important; 
-        }
+        /* 2. 简繁切换字体强制规则 */
+        body.lang-tc, body.lang-tc * { font-family: "QijiCustom", serif !important; }
+        body.lang-sc, body.lang-sc * { font-family: "MiLanting", sans-serif !important; }
 
-        /* 简繁切换按钮 */
+        /* 3. 布局与组件 */
         .lang-switch { position: fixed; top: 15px; right: 15px; z-index: 100; display: flex; gap: 8px; }
         .lang-btn {
             padding: 6px 16px; border: 1px solid var(--ink); border-radius: 20px;
             background: rgba(255,255,255,0.7); font-size: 13px; cursor: pointer;
-            transition: all 0.2s; font-family: sans-serif !important; /* 按钮用系统黑体防止加载慢看不见字 */
+            transition: all 0.2s; font-family: sans-serif !important;
         }
         .lang-btn.active { background: var(--ink); color: var(--bg-paper); }
 
-        /* 布局容器 */
         .yj-paper {
             background: var(--bg-paper);
             background-image: radial-gradient(rgba(0,0,0,.018) 1px,transparent 1px);
@@ -60,35 +52,40 @@
         .yj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 40px; align-items: stretch; }
         .yj-cell { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
 
-        /* 图像与装饰 */
-        .yj-name-cell { display: flex; align-items: center; gap: 16px; }
+        /* 4. 图片位置修改点 */
+        /* 卦名背景：圆形太极图 */
         .yj-seal {
             width: 70px; height: 70px; flex: 0 0 70px; border-radius: 50%;
-            background-image: url('https://r.jina.ai/i/06f753c9e6574f878f9f0910077c5938');
-            background-size: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            background-image: url('./images/卦名背景.png');
+            background-size: cover; background-position: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
+        .yj-name-cell { display: flex; align-items: center; gap: 16px; }
         .yj-gua-name { font-size: 44px; font-weight: 600; letter-spacing: 2px; line-height: 1; }
         .yj-gua-no { font-size: 14px; color: var(--ink-soft); margin-top: 8px; }
 
-        .yj-daxiang-box { display: flex; align-items: center; gap: 15px; }
+        /* 大象传左侧方图 */
         .yj-seal-sm {
             width: 46px; height: 46px; flex: 0 0 46px;
-            background-image: url('https://r.jina.ai/i/6c857700a06a461c9441f71a7d65070e');
-            background-size: cover; border: 1px solid rgba(0,0,0,0.08);
+            background-image: url('./images/大象.png');
+            background-size: cover; background-position: center;
         }
+        .yj-daxiang-box { display: flex; align-items: center; gap: 15px; }
         .yj-daxiang { font-size: 19px; line-height: 1.5; font-weight: 500; }
         .yj-daxiang b { display: block; font-weight: 500; margin-top: 4px; }
 
         .yj-guaci { font-size: 26px; line-height: 1.6; font-weight: 500; padding-left: 15px; border-left: 5px solid var(--ink); }
 
+        /* 彖传背景与上方方图 */
         .yj-tuan-panel {
-            background-image: url('https://r.jina.ai/i/28f62c5b369c45ef880562e154627197');
-            background-size: cover; border-radius: var(--radius-md); padding: 22px;
+            background-image: url('./images/彖传背景.png');
+            background-size: cover; background-position: center;
+            border-radius: var(--radius-md); padding: 22px;
             display: flex; flex-direction: column; justify-content: center; position: relative;
         }
         .yj-tuan-head-img {
             width: 36px; height: 36px;
-            background-image: url('https://r.jina.ai/i/103a8915442f49df9c40333d6ea9a75d');
+            background-image: url('./images/彖传.png');
             background-size: contain; background-repeat: no-repeat; margin-bottom: 15px;
         }
         .yj-tuan { font-size: 15px; line-height: 1.8; text-align: justify; }
@@ -146,7 +143,7 @@
 </div>
 
 <script>
-    let state = [1,0,1,0,0,1]; // 初始噬嗑
+    let state = [1,0,1,0,0,1]; // 初始噬嗑卦
     let currentLang = 'tc'; 
 
     function setLang(lang) {
